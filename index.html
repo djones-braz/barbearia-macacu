@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barbearia Macacu - Sistema</title>
+    <title>Barbearia Macacu - Agendamento</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome (para ícones) -->
+    <!-- Font Awesome (Ícones) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <script>
-        // Configuração do Tailwind
+        // Configuração do Tailwind para usar a fonte 'Inter'
         tailwind.config = {
             theme: {
                 extend: {
@@ -17,552 +18,574 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#0a2540',
-                        'secondary': '#1e3a8a', // Um azul mais escuro para botões
-                        'light-bg': '#f7f8fa', // Fundo claro das telas
-                        'accent': '#3b82f6', // Cor de destaque
+                        primary: '#1E3A8A', // Azul escuro
+                        secondary: '#D1D5DB', // Cinza claro
+                        accent: '#F59E0B', // Amarelo/Laranja
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Estilos customizados */
+        /* Estilo para a fonte Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; /* Um cinza de fundo geral */
+            background-color: #f3f4f6; /* Fundo cinza bem claro */
         }
-        .view {
-            display: none; /* Todas as "telas" começam escondidas */
-        }
-        .sidebar-link {
-            @apply flex items-center p-3 rounded-lg text-gray-700 hover:bg-primary hover:text-white transition-all duration-200;
-        }
-        .sidebar-link.active {
-            @apply bg-primary text-white;
-        }
-        .sidebar-icon {
-            @apply w-5 h-5 mr-3;
-        }
-        .card {
-            @apply bg-white p-6 rounded-xl shadow-md;
-        }
-        .input-field {
-            @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary;
-        }
-        .btn {
-            @apply w-full py-3 px-5 rounded-lg text-white font-semibold transition-all duration-200;
-        }
-        .btn-primary {
-            @apply bg-secondary hover:bg-primary;
-        }
-         .btn-outline {
-            @apply bg-transparent border border-secondary text-secondary hover:bg-secondary hover:text-white;
+        /* Esconde todas as telas por padrão */
+        .page-screen {
+            display: none;
         }
     </style>
 </head>
-<body class="flex bg-light-bg min-h-screen">
+<body class="text-gray-900">
 
-    <!-- === Sidebar (Painel Admin) === -->
-    <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-full p-4 flex-col justify-between hidden">
-        <div>
-            <!-- Logo e Perfil -->
-            <div class="flex items-center gap-3 mb-6 p-2">
-                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">B</div>
-                <span class="text-xl font-bold text-primary">Barbearia Macacu</span>
-            </div>
-
-            <div class="flex items-center gap-3 mb-8 p-2">
-                <img src="https://placehold.co/40x40/E8F0FE/1e3a8a?text=J" alt="Avatar" class="w-10 h-10 rounded-full">
-                <div>
-                    <div class="font-semibold text-gray-900">João Silva</div>
-                    <div class="text-sm text-gray-500">Barbeiro</div>
-                </div>
-            </div>
-
-            <!-- Links de Navegação -->
-            <nav class="space-y-2">
-                <a href="#dashboard" class="sidebar-link active" onclick="navigate('dashboard')">
-                    <i class="fa-solid fa-tachometer-alt sidebar-icon"></i> Dashboard
-                </a>
-                <a href="#agenda" class="sidebar-link" onclick="navigate('agenda')">
-                    <i class="fa-solid fa-calendar-days sidebar-icon"></i> Agenda
-                </a>
-                <a href="#clientes" class="sidebar-link" onclick="navigate('clientes')">
-                    <i class="fa-solid fa-users sidebar-icon"></i> Clientes
-                </a>
-                 <a href="#servicos" class="sidebar-link" onclick="navigate('servicos')">
-                    <i class="fa-solid fa-cut sidebar-icon"></i> Serviços
-                </a>
-                <a href="#financeiro" class="sidebar-link" onclick="navigate('financeiro')">
-                    <i class="fa-solid fa-dollar-sign sidebar-icon"></i> Financeiro
-                </a>
-                <a href="#configuracoes" class="sidebar-link" onclick="navigate('configuracoes')">
-                    <i class="fa-solid fa-cog sidebar-icon"></i> Configurações
-                </a>
-            </nav>
+    <!-- =========== MODAL DE CARREGAMENTO (LOADING) =========== -->
+    <div id="loadingModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-xl">
+            <i class="fas fa-spinner fa-spin text-3xl text-primary"></i>
+            <span class="mt-3 font-medium">Carregando...</span>
         </div>
-        
-        <div>
-            <a href="#login" class="sidebar-link" onclick="navigate('login')">
-                <i class="fa-solid fa-sign-out-alt sidebar-icon"></i> Sair
-            </a>
+    </div>
+    
+    <!-- =========== MODAL DE MENSAGEM (ERRO/SUCESSO) =========== -->
+    <div id="messageModal" class="fixed top-5 right-5 z-50 hidden transition-transform translate-x-full">
+        <div id="messageModalContent" class="flex items-center p-4 rounded-lg shadow-lg text-white">
+            <i id="messageModalIcon" class="fas fa-info-circle text-lg mr-3"></i>
+            <span id="messageModalText">Mensagem</span>
         </div>
-    </aside>
+    </div>
 
-    <!-- === Conteúdo Principal === -->
-    <main id="main-content" class="flex-1 transition-all duration-300">
-        
-        <!-- ============================================= -->
-        <!-- == TELA DE LOGIN (Baseado na Tela 2) == -->
-        <!-- ============================================= -->
-        <div id="view-login" class="view flex items-center justify-center min-h-screen bg-gray-100">
-            <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl">
-                <img src="https://placehold.co/100x100/eeeeee/333333?text=Logo" alt="Logo Barbearia" class="mx-auto h-20 w-auto">
-                <h2 class="text-3xl font-bold text-center text-primary">Acesse sua Conta</h2>
-                <form class="space-y-4">
-                    <div>
-                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input id="login-email" type="email" placeholder="Digite seu e-mail" class="input-field mt-1" required>
-                    </div>
-                    <div>
-                        <label for="login-senha" class="block text-sm font-medium text-gray-700">Senha</label>
-                        <input id="login-senha" type="password" placeholder="Digite sua senha" class="input-field mt-1" required>
-                    </div>
-                    <div class="text-right">
-                        <a href="#" class="text-sm font-medium text-secondary hover:underline">Esqueceu a senha?</a>
-                    </div>
-                    <div>
-                        <!-- Este botão simula um login de admin/barbeiro e vai para o dashboard -->
-                        <button type="button" class="btn btn-primary" onclick="login()">Entrar</button>
-                    </div>
-                </form>
-                <p class="text-sm text-center text-gray-600">
-                    Não possui uma conta? 
-                    <a href="#signup" class="font-medium text-secondary hover:underline" onclick="navigate('signup')">Cadastre-se</a>
-                </p>
-            </div>
-        </div>
 
-        <!-- ============================================= -->
-        <!-- == TELA DE CADASTRO (Baseado na Tela 2) == -->
-        <!-- ============================================= -->
-        <div id="view-signup" class="view flex items-center justify-center min-h-screen bg-gray-100">
-             <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl">
-                <img src="https://placehold.co/100x100/eeeeee/333333?text=Logo" alt="Logo Barbearia" class="mx-auto h-20 w-auto">
-                <h2 class="text-3xl font-bold text-center text-primary">Crie sua Conta</h2>
-                <p class="text-center text-gray-500">Selecione seu perfil e preencha os campos.</p>
-                
-                <!-- Seleção de Perfil -->
-                <div class="grid grid-cols-3 gap-2 rounded-lg p-1 bg-gray-200">
-                    <button class="profile-tab active" onclick="selectProfileTab(this)">Cliente</button>
-                    <button class="profile-tab" onclick="selectProfileTab(this)">Barbeiro</button>
-                    <button class="profile-tab" onclick="selectProfileTab(this)">Admin</button>
-                </div>
+    <!-- =========== CONTAINER PRINCIPAL =========== -->
+    <div class="container mx-auto max-w-7xl p-4">
 
-                <form class="space-y-4">
-                    <div>
-                        <label for="signup-nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                        <input id="signup-nome" type="text" placeholder="Digite seu nome completo" class="input-field mt-1" required>
-                    </div>
-                    <div>
-                        <label for="signup-email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input id="signup-email" type="email" placeholder="Digite seu e-mail" class="input-field mt-1" required>
-                    </div>
-                    <div>
-                        <label for="signup-senha" class="block text-sm font-medium text-gray-700">Crie uma senha</label>
-                        <input id="signup-senha" type="password" placeholder="Crie uma senha" class="input-field mt-1" required>
-                    </div>
-                    <div>
-                        <label for="signup-confirma-senha" class="block text-sm font-medium text-gray-700">Confirme sua Senha</label>
-                        <input id="signup-confirma-senha" type="password" placeholder="Repita a senha" class="input-field mt-1" required>
-                    </div>
-                     <div class="flex items-center">
-                        <input id="termos" name="termos" type="checkbox" class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded">
-                        <label for="termos" class="ml-2 block text-sm text-gray-700">Li e aceito os <a href="#" class="text-secondary hover:underline">Termos de Serviço</a></label>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-primary" onclick="alert('Funcionalidade de cadastro a implementar.')">Cadastrar</button>
-                    </div>
-                </form>
-                <p class="text-sm text-center text-gray-600">
-                    Já possui uma conta? 
-                    <a href="#login" class="font-medium text-secondary hover:underline" onclick="navigate('login')">Entrar</a>
-                </p>
-            </div>
-        </div>
-
-        <!-- ============================================= -->
-        <!-- == TELA DE AGENDAMENTO (Baseado na Tela 1) == -->
-        <!-- ============================================= -->
-        <div id="view-agendamento" class="view">
-            <header class="bg-white shadow-sm p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">B</div>
-                    <span class="text-xl font-bold text-primary">Barbearia Macacu</span>
-                </div>
-                <nav class="flex items-center gap-6">
-                    <a href="#agendamento" class="text-secondary font-semibold" onclick="navigate('agendamento')">Agendamento</a>
-                    <a href="#login" class="text-gray-600 hover:text-secondary" onclick="navigate('login')">Meus Agendamentos</a>
-                    <a href="#login" class="text-gray-600 hover:text-secondary" onclick="navigate('login')">Minha Conta</a>
+        <!-- ============================================== -->
+        <!-- ===== TELA 1: FLUXO DE AGENDAMENTO (PÚBLICO) ===== -->
+        <!-- ============================================== -->
+        <div id="public-booking" class="page-screen">
+            <header class="flex justify-between items-center py-4 border-b">
+                <h1 class="text-2xl font-bold text-primary">Barbearia Macacu</h1>
+                <nav class="flex items-center space-x-4">
+                    <a href="#booking" class="font-medium text-primary">Agendamento</a>
+                    <a href="#meus-agendamentos" class="font-medium text-gray-600 hover:text-primary">Meus Agendamentos</a>
+                    <a id="nav-public-login" href="#login" class="font-medium text-gray-600 hover:text-primary">Minha Conta</a>
+                    <a id="nav-public-dashboard" href="#dashboard" class="hidden font-medium text-gray-600 hover:text-primary">Meu Painel</a>
                 </nav>
             </header>
-            
-            <div class="container mx-auto max-w-4xl p-8">
-                <h1 class="text-4xl font-bold text-gray-900 mb-2">Agende seu horário</h1>
-                <p class="text-lg text-gray-600 mb-8">Siga os passos para garantir o seu horário conosco.</p>
 
-                <!-- Etapas -->
-                <div class="flex items-center justify-center space-x-4 mb-12">
-                    <span class="flex items-center text-blue-600 font-semibold">
-                        <span class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2">1</span>
-                        Serviço
-                    </span>
-                    <span class="flex-1 h-0.5 bg-gray-300"></span>
-                    <span class="flex items-center text-gray-500">
-                        <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-2">2</span>
-                        Barbeiro
-                    </span>
-                    <span class="flex-1 h-0.5 bg-gray-300"></span>
-                    <span class="flex items-center text-gray-500">
-                        <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-2">3</span>
-                        Horário
-                    </span>
-                     <span class="flex-1 h-0.5 bg-gray-300"></span>
-                    <span class="flex items-center text-gray-500">
-                        <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-2">4</span>
-                        Confirmação
-                    </span>
-                </div>
+            <main class="bg-white p-8 rounded-lg shadow-lg mt-6">
+                <h2 class="text-3xl font-bold text-center">Agende seu horário</h2>
+                <p class="text-center text-gray-600 mt-2">Siga os passos para garantir o seu horário conosco.</p>
 
-                <div class="card">
-                    <h2 class="text-2xl font-semibold mb-6">Qual serviço você deseja?</h2>
-                    <div id="lista-servicos-publica" class="grid md:grid-cols-3 gap-6">
-                        <!-- Serviços serão carregados aqui pelo JS -->
-                        <div class="border rounded-lg p-4 text-center animate-pulse bg-gray-200 h-64">Carregando serviços...</div>
+                <!-- Etapas do Agendamento -->
+                <div class="flex justify-center space-x-4 my-8">
+                    <div id="step-1" class="step-indicator flex items-center">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold">1</span>
+                        <span class="ml-2 font-semibold text-primary">Serviço</span>
                     </div>
-                    <div class="flex justify-end mt-8">
-                        <button class="py-3 px-8 rounded-lg bg-secondary text-white font-semibold flex items-center gap-2" disabled>
-                            Avançar <i class="fa-solid fa-arrow-right"></i>
-                        </button>
+                    <div class="text-gray-400 font-bold mx-2">→</div>
+                    <div id="step-2" class="step-indicator opacity-50 flex items-center">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-gray-600 font-bold">2</span>
+                        <span class="ml-2 font-semibold text-gray-500">Barbeiro</span>
                     </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- ============================================= -->
-        <!-- == TELA DE DASHBOARD (Baseado na Tela 3) == -->
-        <!-- ============================================= -->
-        <div id="view-dashboard" class="view p-8">
-            <!-- Header do Painel -->
-            <header class="flex justify-between items-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Olá, João!</h1>
-                <div class="flex items-center gap-4">
-                    <button class="text-gray-500 hover:text-primary"><i class="fa-solid fa-bell text-xl"></i></button>
-                    <button class="text-gray-500 hover:text-primary"><i class="fa-solid fa-comment-dots text-xl"></i></button>
-                    <img src="https://placehold.co/40x40/E8F0FE/1e3a8a?text=J" alt="Avatar" class="w-10 h-10 rounded-full">
-                </div>
-            </header>
-
-            <!-- Cards de Métricas -->
-            <div class="grid md:grid-cols-3 gap-6 mb-8">
-                <!-- Faturamento do Dia -->
-                <div class="card">
-                    <h3 class="text-gray-500 mb-2">Faturamento do Dia</h3>
-                    <div class="text-4xl font-bold text-gray-900 mb-2">R$ 350,00</div>
-                    <span class="text-green-500 text-sm font-medium">+5.2% vs ontem</span>
-                </div>
-                <!-- Agendamentos para Hoje -->
-                <div class="card">
-                    <h3 class="text-gray-500 mb-2">Agendamentos para Hoje</h3>
-                    <div class="text-4xl font-bold text-gray-900 mb-2">7</div>
-                    <span class="text-green-500 text-sm font-medium">+2 vs ontem</span>
-                </div>
-                <!-- Meta Mensal -->
-                <div class="card">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-gray-500">Meta Mensal</h3>
-                        <span class="text-lg font-semibold text-primary">75%</span>
+                    <div class="text-gray-400 font-bold mx-2">→</div>
+                    <div id="step-3" class="step-indicator opacity-50 flex items-center">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-gray-600 font-bold">3</span>
+                        <span class="ml-2 font-semibold text-gray-500">Horário</span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
-                    </div>
-                    <span class="text-gray-600 text-sm">R$ 3.750 / R$ 5.000</span>
-                </div>
-            </div>
-
-            <!-- Sua Agenda -->
-            <div class="card">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-semibold">Sua Agenda</h2>
-                    <div class="flex gap-2">
-                        <button class="py-2 px-4 rounded-lg bg-gray-200 text-sm font-semibold text-primary">Hoje</button>
-                        <button class="py-2 px-4 rounded-lg text-sm font-medium text-gray-600">Semana</button>
-                        <button class="py-2 px-4 rounded-lg text-sm font-medium text-gray-600">Mês</button>
+                    <div class="text-gray-400 font-bold mx-2">→</div>
+                    <div id="step-4" class="step-indicator opacity-50 flex items-center">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-gray-600 font-bold">4</span>
+                        <span class="ml-2 font-semibold text-gray-500">Confirmação</span>
                     </div>
                 </div>
                 
-                <div class="space-y-4">
-                    <!-- Item da Agenda 1 -->
-                    <div class="flex items-center p-4 rounded-lg border">
-                        <div class="text-center w-16 mr-4">
-                            <div class="text-lg font-bold text-primary">09:00</div>
-                            <div class="text-sm text-gray-500">AM</div>
+                <!-- Etapa 1: Seleção de Serviço -->
+                <div id="booking-step-1" class="booking-step">
+                    <h3 class="text-2xl font-semibold mb-6">Qual serviço você deseja?</h3>
+                    <div id="servicesList" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Carregando Serviços... -->
+                        <div class="border rounded-lg p-4 text-center text-gray-500">
+                            <div class="h-40 bg-gray-200 rounded-md animate-pulse mb-4"></div>
+                            <div class="h-6 bg-gray-200 rounded-md animate-pulse w-3/4 mx-auto mb-2"></div>
+                            <div class="h-4 bg-gray-200 rounded-md animate-pulse w-1/2 mx-auto"></div>
                         </div>
-                        <div class="flex-1">
-                            <div class="font-semibold text-gray-800">Carlos Pereira</div>
-                            <div class="text-sm text-gray-600">Corte de Cabelo</div>
-                        </div>
-                        <button class="flex items-center gap-2 py-2 px-3 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
-                            <i class="fa-solid fa-paper-plane"></i> Lembrete
-                        </button>
                     </div>
-                    <!-- Item da Agenda 2 -->
-                    <div class="flex items-center p-4 rounded-lg border">
-                        <div class="text-center w-16 mr-4">
-                            <div class="text-lg font-bold text-primary">10:30</div>
-                            <div class="text-sm text-gray-500">AM</div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-semibold text-gray-800">Ricardo Alves</div>
-                            <div class="text-sm text-gray-600">Barba e Cabelo</div>
-                        </div>
-                         <button class="flex items-center gap-2 py-2 px-3 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
-                            <i class="fa-solid fa-paper-plane"></i> Lembrete
-                        </button>
-                    </div>
-                    <!-- Item da Agenda 3 (Encaixe) -->
-                    <div class="flex items-center p-4 rounded-lg bg-red-50 border-l-4 border-red-500">
-                        <div class="text-center w-16 mr-4">
-                            <div class="text-lg font-bold text-red-600">11:00</div>
-                            <div class="text-sm text-gray-500">AM</div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-semibold text-red-700">Mariana Costa</div>
-                            <div class="text-sm text-red-600">Corte Feminino (Encaixe)</div>
-                        </div>
-                         <button class="flex items-center gap-2 py-2 px-3 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
-                            <i class="fa-solid fa-paper-plane"></i> Lembrete
+                    <div class="text-right mt-8">
+                        <button id="btn-next-step-1" class="bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Avançar <i class="fas fa-arrow-right ml-2"></i>
                         </button>
                     </div>
                 </div>
                 
-                <!-- Estado Vazio -->
-                <div class="text-center py-12 text-gray-500">
-                    <i class="fa-solid fa-calendar-times text-4xl mb-4"></i>
-                    <p class="font-semibold">Nenhum agendamento para a tarde.</p>
-                    <p class="text-sm">Aproveite para organizar suas ferramentas!</p>
-                </div>
-
-            </div>
-            
-            <button class="fixed bottom-8 right-8 bg-primary text-white py-4 px-6 rounded-full shadow-lg text-lg font-semibold flex items-center gap-3">
-                <i class="fa-solid fa-plus"></i> Novo Agendamento
-            </button>
+                <!-- Outras Etapas (a implementar) -->
+                
+            </main>
         </div>
         
-        <!-- ============================================= -->
-        <!-- == TELA DE SERVIÇOS (Baseado na Tela 5) == -->
-        <!-- ============================================= -->
-        <div id="view-servicos" class="view p-8">
-            <header class="flex justify-between items-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Gerenciamento de Serviços</h1>
-                <button class="bg-primary text-white py-2 px-4 rounded-lg font-semibold flex items-center gap-2" onclick="abrirModalServico()">
-                    <i class="fa-solid fa-plus"></i> Adicionar Serviço
-                </button>
-            </header>
-
-            <div class="card">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b border-gray-200">
-                            <th class="py-4 px-2 font-semibold text-gray-600">Serviço</th>
-                            <th class="py-4 px-2 font-semibold text-gray-600">Preço (R$)</th>
-                            <th class="py-4 px-2 font-semibold text-gray-600">Duração (min)</th>
-                            <th class="py-4 px-2 font-semibold text-gray-600">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-servicos">
-                        <!-- Linha de exemplo (será preenchido pelo JS) -->
-                        <tr class="border-b border-gray-100">
-                            <td class="py-4 px-2">Corte de Cabelo</td>
-                            <td class="py-4 px-2">40,00</td>
-                            <td class="py-4 px-2">30</td>
-                            <td class="py-4 px-2 space-x-4">
-                                <button class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pencil"></i></button>
-                                <button class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <!-- Fim da linha de exemplo -->
-                    </tbody>
-                </table>
-                <div id="servicos-loading" class="text-center p-8">Carregando serviços...</div>
-                <div id="servicos-empty" classs="text-center p-8 hidden">
-                    <i class="fa-solid fa-box-open text-4xl mb-4 text-gray-400"></i>
-                    <p class="font-semibold text-gray-600">Nenhum serviço encontrado</p>
-                    <p class="text-sm text-gray-500">Clique no botão acima para adicionar um serviço.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================= -->
-        <!-- == TELA DE CLIENTES (Baseado na Tela 6) == -->
-        <!-- ============================================= -->
-        <div id="view-clientes" class="view p-8">
-            <header class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Gerenciamento de Clientes (CRM)</h1>
-                    <p class="text-gray-600">Visualize e gerencie as informações dos seus clientes.</p>
-                </div>
-                <button class="bg-red-600 text-white py-2 px-4 rounded-lg font-semibold flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Enviar Notificação em Massa
-                </button>
-            </header>
-
-            <div class="flex gap-6">
-                <!-- Lista de Clientes -->
-                <div class="w-1/3">
-                    <div class="card p-4">
-                        <div class="relative mb-4">
-                            <input type="text" placeholder="Buscar cliente por nome, telefone..." class="input-field pl-10">
-                            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        </div>
-                        <div class="flex justify-between text-sm mb-4">
-                            <button class="text-gray-600">Ordenar por: <span class="font-semibold text-primary">Última visita <i class="fa-solid fa-chevron-down"></i></span></button>
-                            <button class="text-gray-600">Filtrar por: <span class="font-semibold text-primary">Aniversariante <i class="fa-solid fa-chevron-down"></i></span></button>
-                        </div>
-                        
-                        <div id="lista-clientes" class="space-y-2 max-h-[60vh] overflow-y-auto">
-                            <!-- Clientes carregados pelo JS -->
-                            <div class="text-center p-8">Carregando clientes...</div>
+        <!-- ============================================== -->
+        <!-- ===== TELA 2: LOGIN (AUTENTICAÇÃO)         ===== -->
+        <!-- ============================================== -->
+        <div id="login" class="page-screen flex items-center justify-center min-h-screen">
+            <div class="bg-white p-10 rounded-xl shadow-2xl w-full max-w-md">
+                <img src="https://placehold.co/100x100/1E3A8A/FFFFFF?text=BM" alt="Logo Barbearia" class="w-24 h-24 mx-auto rounded-full mb-6 -mt-20 border-4 border-white">
+                <h2 class="text-3xl font-bold text-center text-primary mb-2">Acesse sua Conta</h2>
+                <p class="text-center text-gray-600 mb-8">Bem-vindo de volta!</p>
+                
+                <form id="loginForm">
+                    <div class="mb-4">
+                        <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="email" id="loginEmail" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="seu.email@exemplo.com" required>
                         </div>
                     </div>
-                </div>
-
-                <!-- Detalhes do Cliente -->
-                <div class="w-2/3">
-                    <div id="cliente-detalhe" class="card">
-                        <!-- Detalhes do Cliente João Silva (Exemplo) -->
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="flex items-center gap-4">
-                                <img src="https://placehold.co/80x80/E8F0FE/1e3a8a?text=J" alt="Avatar Cliente" class="w-20 h-20 rounded-full">
-                                <div>
-                                    <h2 class="text-3xl font-bold text-gray-900">João Silva</h2>
-                                    <p class="text-gray-500">Cliente desde 18/02/2023</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button class="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-phone"></i></button>
-                                <button class="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-comment"></i></button>
-                                <button class="py-2 px-4 rounded-lg bg-secondary text-white font-semibold">Agendar Novo</button>
-                            </div>
+                    <div class="mb-6">
+                        <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="password" id="loginPassword" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Sua senha" required>
                         </div>
-
-                        <div class="border-b border-gray-200 mb-6">
-                            <nav class="flex gap-6">
-                                <button class="pb-3 border-b-2 border-primary text-primary font-semibold">Detalhes</button>
-                                <button class="pb-3 border-b-2 border-transparent text-gray-500 hover:text-primary">Histórico</button>
-                                <button class="pb-3 border-b-2 border-transparent text-gray-500 hover:text-primary">Preferências</button>
-                            </nav>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <h4 class="text-sm font-semibold text-gray-500 mb-2">Informações de Contato</h4>
-                                <div class="space-y-1">
-                                    <p><strong>Telefone:</strong> (21) 99876-5432</p>
-                                    <p><strong>Email:</strong> joao.silva@email.com</p>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-semibold text-gray-500 mb-2">Dados Pessoais</h4>
-                                <div class="space-y-1">
-                                    <p><strong>Aniversário:</strong> 25 de Outubro</p>
-                                    <p><strong>Endereço:</strong> Não informado</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <h4 class="text-sm font-semibold text-gray-500 mb-2">Anotações e Preferências</h4>
-                            <p class="text-gray-700 bg-gray-50 p-3 rounded-lg">Prefere máquina 2 nas laterais e tesoura em cima. Alérgico a minoxidil. Gosta de conversar sobre futebol e Fórmula 1. Oferecer café expresso sem açúcar.</p>
-                        </div>
-
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                             <h4 class="text-sm font-semibold text-gray-500 mb-2">Resumo Financeiro</h4>
-                             <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-gray-600">Total Gasto</p>
-                                    <p class="text-2xl font-bold text-primary">R$ 875,00</p>
-                                </div>
-                                <div>
-                                    <p class="text-gray-600">Último Pagamento</p>
-                                    <p class="text-lg font-semibold text-gray-800">15/07/2024</p>
-                                </div>
-                             </div>
-                        </div>
-
-                        <div class="flex justify-end mt-6">
-                            <button class="flex items-center gap-2 py-2 px-4 rounded-lg bg-gray-200 text-gray-700 font-medium">
-                                <i class="fa-solid fa-pencil"></i> Editar Cadastro
-                            </button>
-                        </div>
+                        <a href="#" class="text-sm text-primary hover:underline mt-2 block text-right">Esqueceu a senha?</a>
                     </div>
                     
-                    <div id="cliente-empty" class="card hidden text-center p-12 text-gray-500">
-                        <i class="fa-solid fa-user-search text-5xl mb-4"></i>
-                        <p class="font-semibold">Selecione um cliente</p>
-                        <p class="text-sm">Clique em um cliente na lista ao lado para ver seus detalhes.</p>
+                    <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all text-lg">
+                        Entrar
+                    </button>
+                </form>
+                
+                <p class="text-center text-gray-600 mt-6">
+                    Não possui uma conta? <a href="#signup" class="font-semibold text-primary hover:underline">Cadastre-se</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ===== TELA 3: CADASTRO (AUTENTICAÇÃO)      ===== -->
+        <!-- ============================================== -->
+        <div id="signup" class="page-screen flex items-center justify-center min-h-screen">
+            <div class="bg-white p-10 rounded-xl shadow-2xl w-full max-w-lg">
+                <img src="https://placehold.co/100x100/1E3A8A/FFFFFF?text=BM" alt="Logo Barbearia" class="w-24 h-24 mx-auto rounded-full mb-6 -mt-20 border-4 border-white">
+                <h2 class="text-3xl font-bold text-center text-primary mb-2">Crie sua Conta</h2>
+                <p class="text-center text-gray-600 mb-6">Selecione seu perfil e preencha os campos abaixo.</p>
+
+                <!-- Seleção de Perfil -->
+                <div class="flex justify-center mb-6 rounded-lg bg-gray-100 p-1">
+                    <button id="btn-profile-cliente" class="profile-toggle-btn flex-1 py-2 px-4 rounded-md font-semibold text-white bg-primary">Cliente</button>
+                    <button id="btn-profile-barbeiro" class="profile-toggle-btn flex-1 py-2 px-4 rounded-md font-semibold text-gray-600">Barbeiro</button>
+                    <button id="btn-profile-admin" class="profile-toggle-btn flex-1 py-2 px-4 rounded-md font-semibold text-gray-600">Admin</button>
+                </div>
+
+                <form id="signupForm">
+                    <input type="hidden" id="signupTipoPerfil" value="Cliente">
+                    <div class="mb-4">
+                        <label for="signupNome" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo</label>
+                        <div class="relative">
+                            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="signupNome" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Digite seu nome completo" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="email" id="signupEmail" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Digite seu e-mail" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-2">Crie uma senha</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="password" id="signupPassword" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Crie uma senha" required>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label for="signupConfirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirme sua Senha</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="password" id="signupConfirmPassword" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Repita a senha" required>
+                        </div>
+                        <p id="passwordError" class="text-red-500 text-sm mt-1 hidden">As senhas não coincidem.</p>
+                    </div>
+
+                    <div class="mb-6 flex items-center">
+                        <input type="checkbox" id="signupTerms" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" required>
+                        <label for="signupTerms" class="ml-2 block text-sm text-gray-700">Eu li e aceito os <a href="#" class="text-primary hover:underline">Termos de Serviço</a></label>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all text-lg">
+                        Cadastrar
+                    </button>
+                </form>
+                
+                <p class="text-center text-gray-600 mt-6">
+                    Já possui uma conta? <a href="#login" class="font-semibold text-primary hover:underline">Entrar</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- ===== TELA 4: PAINEL ADMIN / BARBEIRO      ===== -->
+        <!-- ============================================== -->
+        <div id="admin-dashboard" class="page-screen">
+            <div class="flex h-screen">
+                <!-- Sidebar -->
+                <aside class="w-64 bg-primary text-white flex flex-col fixed h-full">
+                    <div class="p-6 border-b border-blue-800">
+                        <h2 class="text-xl font-bold">Barbearia Macacu</h2>
+                        <span id="userProfileName" class="text-sm text-blue-200">Painel Admin</span>
+                    </div>
+                    <nav class="flex-1 p-4 space-y-2">
+                        <a href="#dashboard" class="nav-link-admin active bg-blue-700" data-target="panel-dashboard">
+                            <i class="fas fa-tachometer-alt w-6"></i> Dashboard
+                        </a>
+                        <a href="#agenda" class="nav-link-admin" data-target="panel-agenda">
+                            <i class="fas fa-calendar-alt w-6"></i> Agenda
+                        </a>
+                        <a href="#servicos" class="nav-link-admin" data-target="panel-servicos">
+                            <i class="fas fa-cut w-6"></i> Serviços
+                        </a>
+                        <a href="#clientes" class="nav-link-admin" data-target="panel-clientes">
+                            <i class="fas fa-users w-6"></i> Clientes
+                        </a>
+                        <a href="#financeiro" class="nav-link-admin" data-target="panel-financeiro">
+                            <i class="fas fa-dollar-sign w-6"></i> Financeiro
+                        </a>
+                        <a href="#configuracoes" class="nav-link-admin" data-target="panel-configuracoes">
+                            <i class="fas fa-cog w-6"></i> Configurações
+                        </a>
+                    </nav>
+                    <div class="p-4 border-t border-blue-800">
+                        <a href="#logout" id="btnLogout" class="flex items-center p-2 rounded-lg text-blue-200 hover:bg-blue-700 hover:text-white">
+                            <i class="fas fa-sign-out-alt w-6"></i> Sair
+                        </a>
+                    </div>
+                </aside>
+
+                <!-- Conteúdo Principal -->
+                <main class="flex-1 ml-64 bg-gray-100 p-8 overflow-y-auto">
+                    <!-- Header do Painel -->
+                    <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 id="panelTitle" class="text-3xl font-bold text-gray-800">Dashboard</h1>
+                            <p id="panelSubtitle" class="text-gray-600">Olá, <span id="userName">Usuário</span>! Veja seu resumo.</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="text-gray-500 hover:text-gray-800">
+                                <i class="fas fa-bell fa-lg"></i>
+                            </button>
+                            <img id="userAvatar" src="https://placehold.co/40x40/E2E8F0/718096?text=U" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-gray-300">
+                        </div>
+                    </header>
+
+                    <!-- Container dos Painéis -->
+                    <div class="panel-content">
+
+                        <!-- Painel: Dashboard (Tela 3) -->
+                        <div id="panel-dashboard" class="admin-panel">
+                            <!-- Cards de Resumo -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-gray-500">Faturamento do Dia</h3>
+                                    <p class="text-3xl font-bold text-gray-800">R$ 350,00</p>
+                                    <span class="text-green-500 font-semibold">+5.2% vs ontem</span>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-gray-500">Agendamentos para Hoje</h3>
+                                    <p class="text-3xl font-bold text-gray-800">7</p>
+                                    <span class="text-green-500 font-semibold">+2 vs ontem</span>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-gray-500">Meta Mensal</h3>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5 my-2">
+                                        <div class="bg-primary h-2.5 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                    <span class="text-gray-600">R$ 3.750 / R$ 5.000 (75%)</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Sua Agenda -->
+                            <div>
+                                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Sua Agenda</h2>
+                                <!-- Filtros de Agenda -->
+                                <div class="flex justify-end space-x-2 mb-4">
+                                    <button class="py-2 px-4 rounded-lg bg-primary text-white font-semibold">Hoje</button>
+                                    <button class="py-2 px-4 rounded-lg bg-white text-gray-700 font-semibold border">Semana</button>
+                                    <button class="py-2 px-4 rounded-lg bg-white text-gray-700 font-semibold border">Mês</button>
+                                </div>
+                                <!-- Lista de Agendamentos -->
+                                <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                                    <!-- Item Agenda -->
+                                    <div class="flex items-center justify-between p-4 rounded-lg border">
+                                        <div class="flex items-center">
+                                            <span class="text-lg font-bold text-primary mr-4">09:00 <span class="text-sm font-normal block -mt-1">AM</span></span>
+                                            <div>
+                                                <p class="font-semibold text-gray-800">Carlos Pereira</p>
+                                                <span class="text-sm text-gray-500">Corte de Cabelo</span>
+                                            </div>
+                                        </div>
+                                        <button class="py-2 px-4 rounded-full bg-green-100 text-green-700 font-semibold hover:bg-green-200">
+                                            <i class="fas fa-comment-dots mr-2"></i> Lembrete
+                                        </button>
+                                    </div>
+                                    <!-- Item Agenda -->
+                                    <div class="flex items-center justify-between p-4 rounded-lg border">
+                                        <div class="flex items-center">
+                                            <span class="text-lg font-bold text-primary mr-4">10:30 <span class="text-sm font-normal block -mt-1">AM</span></span>
+                                            <div>
+                                                <p class="font-semibold text-gray-800">Ricardo Alves</p>
+                                                <span class="text-sm text-gray-500">Barba e Cabelo</span>
+                                            </div>
+                                        </div>
+                                        <button class="py-2 px-4 rounded-full bg-green-100 text-green-700 font-semibold hover:bg-green-200">
+                                            <i class="fas fa-comment-dots mr-2"></i> Lembrete
+                                        </button>
+                                    </div>
+                                    <!-- Item Agenda (Cancelado/Destaque) -->
+                                    <div class="flex items-center justify-between p-4 rounded-lg border-l-4 border-red-500 bg-red-50">
+                                        <div class="flex items-center">
+                                            <span class="text-lg font-bold text-red-600 mr-4">11:00 <span class="text-sm font-normal block -mt-1">AM</span></span>
+                                            <div>
+                                                <p class="font-semibold text-red-700">Mariana Costa</p>
+                                                <span class="text-sm text-red-600">Corte Feminino (Encaixe)</span>
+                                            </div>
+                                        </div>
+                                        <button class="py-2 px-4 rounded-full bg-green-100 text-green-700 font-semibold hover:bg-green-200">
+                                            <i class="fas fa-comment-dots mr-2"></i> Lembrete
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Estado Vazio -->
+                                    <div class="text-center text-gray-500 py-12">
+                                        <i class="fas fa-calendar-times text-4xl mb-4"></i>
+                                        <p class="font-semibold">Nenhum agendamento para a tarde.</p>
+                                        <p class="text-sm">Aproveite para organizar suas ferramentas!</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="fixed bottom-8 right-8 bg-primary text-white py-4 px-6 rounded-full shadow-lg hover:bg-opacity-90 transition-all">
+                                <i class="fas fa-plus"></i> Novo Agendamento
+                            </button>
+                        </div>
+                        
+                        <!-- Painel: Serviços (Tela 5) -->
+                        <div id="panel-servicos" class="admin-panel hidden">
+                            <div class="flex justify-between items-center mb-8">
+                                <div>
+                                    <h1 class="text-3xl font-bold text-gray-800">Gerenciamento de Serviços</h1>
+                                    <p class="text-gray-600">Adicione, edite ou remova os serviços oferecidos.</p>
+                                </div>
+                                <button id="btn-add-service-modal" class="bg-primary text-white py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-opacity-90">
+                                    <i class="fas fa-plus mr-2"></i> Adicionar Serviço
+                                </button>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="p-4 text-left text-sm font-semibold text-gray-600">Serviço</th>
+                                            <th class="p-4 text-left text-sm font-semibold text-gray-600">Preço (R$)</th>
+                                            <th class="p-4 text-left text-sm font-semibold text-gray-600">Duração (min)</th>
+                                            <th class="p-4 text-left text-sm font-semibold text-gray-600">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminServicesList">
+                                        <!-- Linhas de serviço serão injetadas aqui -->
+                                        <tr><td colspan="4" class="p-6 text-center text-gray-500">Carregando serviços...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Estado Vazio Serviços -->
+                            <div id="adminServicesEmpty" class="hidden text-center bg-white p-12 rounded-lg shadow-md mt-8 text-gray-500">
+                                <i class="fas fa-lightbulb text-4xl mb-4 text-yellow-400"></i>
+                                <p class="text-xl font-semibold mb-2">Nenhum serviço encontrado</p>
+                                <p class="mb-4">Clique no botão abaixo para começar a cadastrar.</p>
+                                <button id="btn-add-service-empty" class="bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-opacity-90">
+                                    <i class="fas fa-plus mr-2"></i> Adicionar Serviço
+                                </button>
+                            </div>
+
+                        </div>
+                        
+                        <!-- Painel: Clientes (Tela 6) -->
+                        <div id="panel-clientes" class="admin-panel hidden">
+                            <div class="flex justify-between items-center mb-8">
+                                <div>
+                                    <h1 class="text-3xl font-bold text-gray-800">Gerenciamento de Clientes (CRM)</h1>
+                                    <p class="text-gray-600">Visualize e gerencie as informações dos seus clientes.</p>
+                                </div>
+                                <button class="bg-red-500 text-white py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-red-600">
+                                    <i class="fas fa-paper-plane mr-2"></i> Enviar Notificação em Massa
+                                </button>
+                            </div>
+                            
+                            <div class="flex gap-8">
+                                <!-- Coluna da Lista de Clientes -->
+                                <div class="w-1/3">
+                                    <div class="relative mb-4">
+                                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="text" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg" placeholder="Buscar cliente por nome, telefone...">
+                                    </div>
+                                    <div class="flex justify-between items-center mb-4 text-sm">
+                                        <span class="text-gray-600">Ordenar por: <span class="font-semibold text-gray-800">Última visita <i class="fas fa-chevron-down ml-1"></i></span></span>
+                                        <span class="text-gray-600">Filtrar por: <span class="font-semibold text-gray-800">Aniversariantes <i class="fas fa-chevron-down ml-1"></i></span></span>
+                                    </div>
+                                    <div id="clientListCRM" class="bg-white rounded-lg shadow-md overflow-hidden divide-y">
+                                        <!-- Clientes injetados aqui -->
+                                        <div class="p-4 text-center text-gray-500">Carregando clientes...</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Coluna de Detalhes do Cliente -->
+                                <div class="w-2/3">
+                                    <div id="clientDetailCRM" class="bg-white rounded-lg shadow-md p-8">
+                                        <!-- Detalhes do cliente selecionado -->
+                                        <div class="text-center text-gray-500 py-16">
+                                            <i class="fas fa-hand-pointer text-4xl mb-4"></i>
+                                            <p class="text-lg">Selecione um cliente à esquerda para ver os detalhes.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Painel: Financeiro (Tela 4) -->
+                        <div id="panel-financeiro" class="admin-panel hidden">
+                             <!-- Cards de Resumo -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-primary">
+                                    <h3 class="text-gray-500">Faturamento Total (Barbearia)</h3>
+                                    <p class="text-3xl font-bold text-gray-800">R$ 12.450,00</p>
+                                    <span class="text-green-500 font-semibold">+5.2% vs mês anterior</span>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-gray-500">Meu Faturamento</h3>
+                                    <p class="text-3xl font-bold text-gray-800">R$ 4.500,00</p>
+                                    <span class="text-green-500 font-semibold">+8.1% vs mês anterior</span>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-gray-500">Minha Comissão</h3>
+                                    <p class="text-3xl font-bold text-gray-800">R$ 1.800,00</p>
+                                    <span class="text-green-600 font-semibold">Status: Pago</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Gráficos e Relatórios -->
+                            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-lg font-semibold mb-4">Meus Últimos Atendimentos</h3>
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="border-b">
+                                                <th class="p-2 text-left text-sm font-semibold text-gray-600">Cliente</th>
+                                                <th class="p-2 text-left text-sm font-semibold text-gray-600">Valor</th>
+                                                <th class="p-2 text-left text-sm font-semibold text-gray-600">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="p-2">Fernando Lima</td>
+                                                <td class="p-2">R$ 50,00</td>
+                                                <td class="p-2"><span class="py-1 px-2 rounded-full bg-green-100 text-green-700 text-xs">Pago</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="p-2">Gabriel Costa</td>
+                                                <td class="p-2">R$ 85,00</td>
+                                                <td class="p-2"><span class="py-1 px-2 rounded-full bg-green-100 text-green-700 text-xs">Pago</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="p-2">Lucas Martins</td>
+                                                <td class="p-2">R$ 45,00</td>
+                                                <td class="p-2"><span class="py-1 px-2 rounded-full bg-yellow-100 text-yellow-700 text-xs">A Receber</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="p-2">André Santos</td>
+                                                <td class="p-2">R$ 50,00</td>
+                                                <td class="p-2"><span class="py-1 px-2 rounded-full bg-red-100 text-red-700 text-xs">Cancelado</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                                    <h3 class="text-lg font-semibold mb-4">Status dos Pagamentos</h3>
+                                    <div class="flex items-center justify-center">
+                                        <!-- Placeholder para Gráfico Donut -->
+                                        <div class="w-48 h-48 bg-gray-200 rounded-full flex items-center justify-center relative">
+                                            <div class="w-32 h-32 bg-white rounded-full"></div>
+                                            <span class="absolute text-3xl font-bold">105</span>
+                                            <span class="absolute bottom-16 text-gray-600">Total</span>
+                                        </div>
+                                    </div>
+                                    <ul class="mt-4 space-y-2 text-sm">
+                                        <li class="flex items-center justify-between"><span class_alias="flex items-center"><i class="fas fa-circle text-green-500 mr-2"></i> Pagos</span> <span>73</span></li>
+                                        <li class="flex items-center justify-between"><span class_alias="flex items-center"><i class="fas fa-circle text-yellow-500 mr-2"></i> A Receber</span> <span>21</span></li>
+                                        <li class="flex items-center justify-between"><span class_alias="flex items-center"><i class="fas fa-circle text-red-500 mr-2"></i> Cancelados</span> <span>11</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Outros Painéis (Agenda, Configurações) -->
+                        <div id="panel-agenda" class="admin-panel hidden">
+                            <h1 class="text-2xl">Página da Agenda</h1>
+                            <p>Conteúdo da agenda aqui...</p>
+                        </div>
+                        <div id="panel-configuracoes" class="admin-panel hidden">
+                            <h1 class="text-2xl">Página de Configurações</h1>
+                            <p>Conteúdo das configurações aqui...</p>
+                        </div>
+
+                    </div>
+                </main>
+            </div>
+        </div>
+
+
+    </div> <!-- Fim do Container Principal -->
+    
+    <!-- ============================================== -->
+    <!-- ===== MODAL: ADICIONAR/EDITAR SERVIÇO     ===== -->
+    <!-- ============================================== -->
+    <div id="serviceModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-40 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="serviceModalTitle" class="text-2xl font-bold">Adicionar Novo Serviço</h2>
+                <button id="closeServiceModal" class="text-gray-500 hover:text-gray-800">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <form id="serviceForm">
+                <input type="hidden" id="serviceId">
+                <div class="mb-4">
+                    <label for="serviceName" class="block text-sm font-medium text-gray-700 mb-2">Nome do Serviço</label>
+                    <input type="text" id="serviceName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="servicePrice" class="block text-sm font-medium text-gray-700 mb-2">Preço (R$)</label>
+                        <input type="number" id="servicePrice" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    </div>
+                    <div>
+                        <label for="serviceDuration" class="block text-sm font-medium text-gray-700 mb-2">Duração (minutos)</label>
+                        <input type="number" id="serviceDuration" min="0" step="5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Outras telas (Agenda, Financeiro, Config) podem ser adicionadas aqui -->
-        <div id="view-agenda" class="view p-8">
-             <h1 class="text-3xl font-bold text-gray-900">Agenda Completa</h1>
-             <p class="text-gray-600">Em breve...</p>
-        </div>
-        <div id="view-financeiro" class="view p-8">
-             <h1 class="text-3xl font-bold text-gray-900">Meu Desempenho Financeiro</h1>
-             <p class="text-gray-600">Em breve...</p>
-        </div>
-        <div id="view-configuracoes" class="view p-8">
-             <h1 class="text-3xl font-bold text-gray-900">Configurações</h1>
-             <p class="text-gray-600">Em breve...</p>
-        </div>
-
-    </main>
-
-    <!-- === Modal de Serviço === -->
-    <div id="modal-servico" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card w-full max-w-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold" id="modal-servico-titulo">Adicionar Serviço</h2>
-                <button onclick="fecharModalServico()"><i class="fa-solid fa-times text-gray-500"></i></button>
-            </div>
-            <form id="form-servico" class="space-y-4">
-                <input type="hidden" id="servico-id">
-                <div>
-                    <label for="servico-nome" class="block text-sm font-medium text-gray-700">Nome do Serviço</label>
-                    <input id="servico-nome" type="text" placeholder="Ex: Corte de Cabelo" class="input-field mt-1" required>
+                <div class="mb-6">
+                    <label for="serviceDescription" class="block text-sm font-medium text-gray-700 mb-2">Descrição (Opcional)</label>
+                    <textarea id="serviceDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
                 </div>
-                <div>
-                    <label for="servico-preco" class="block text-sm font-medium text-gray-700">Preço (R$)</label>
-                    <input id="servico-preco" type="number" step="0.01" placeholder="Ex: 40,00" class="input-field mt-1" required>
-                </div>
-                <div>
-                    <label for="servico-duracao" class="block text-sm font-medium text-gray-700">Duração (minutos)</label>
-                    <input id="servico-duracao" type="number" placeholder="Ex: 30" class="input-field mt-1" required>
-                </div>
-                <div>
-                    <label for="servico-descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
-                    <textarea id="servico-descricao" rows="3" placeholder="Descreva o serviço..." class="input-field mt-1"></textarea>
-                </div>
-                <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" class="btn btn-outline" onclick="fecharModalServico()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary px-8">Salvar</button>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancelServiceModal" class="bg-gray-200 text-gray-700 py-2 px-6 rounded-lg font-semibold hover:bg-gray-300">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-primary text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-90">
+                        Salvar
+                    </button>
                 </div>
             </form>
         </div>
@@ -576,296 +599,527 @@
         
         // !!! IMPORTANTE !!!
         // Cole aqui a URL do seu Google Apps Script depois de implantá-lo.
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzueay0LGwhm6PKfHFjHlZtkS4kkBG-n_i0YaeB4t9QEKpcQtz6upAIdxF7N2aFmYft4g/exec"; // <-- URL ATUALIZADA
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzueay0LGwhm6PKfHFjHlZtkS4kkBG-n_i0YaeB4t9QEKpcQtz6upAIdxF7N2aFmYft4g/exec";
         
         // =============================================
-        // == LÓGICA DE NAVEGAÇÃO SPA ==
+        // == LÓGICA DE NAVEGAÇÃO SPA (Single Page App) ==
         // =============================================
         
-        const mainContent = document.getElementById('main-content');
-        const sidebar = document.getElementById('sidebar');
-        const views = document.querySelectorAll('.view');
-        
-        function navigate(viewId) {
-            console.log("Navegando para:", viewId);
-            // Esconde todas as views
-            views.forEach(v => v.style.display = 'none');
-            
-            // Mostra a view correta
-            const viewToShow = document.getElementById(`view-${viewId}`);
-            if (viewToShow) {
-                viewToShow.style.display = 'block';
-            } else {
-                console.error("View não encontrada:", viewId);
-                document.getElementById('view-login').style.display = 'block'; // Fallback
-            }
-            
-            // Controla a exibição da Sidebar
-            const adminViews = ['dashboard', 'agenda', 'clientes', 'servicos', 'financeiro', 'configuracoes'];
-            if (adminViews.includes(viewId)) {
-                sidebar.style.display = 'flex';
-                mainContent.style.marginLeft = '16rem'; // 16rem = w-64
-            } else {
-                sidebar.style.display = 'none';
-                mainContent.style.marginLeft = '0';
-            }
+        const allPages = document.querySelectorAll('.page-screen');
+        const allAdminPanels = document.querySelectorAll('.admin-panel');
+        const adminNavLinks = document.querySelectorAll('.nav-link-admin');
+        const adminPanelTitle = document.getElementById('panelTitle');
+        const adminPanelSubtitle = document.getElementById('panelSubtitle');
+        const userNameEl = document.getElementById('userName');
 
-            // Atualiza o link ativo na sidebar
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.href.endsWith(`#${viewId}`)) {
-                    link.classList.add('active');
+        // Estado da Aplicação
+        let appState = {
+            currentUser: null, // { id, nome, email, tipoPerfil }
+            services: [],
+            clients: [],
+            selectedService: null,
+            selectedBarber: null,
+            selectedDateTime: null,
+        };
+
+        // Roteador Principal
+        function handleRouting() {
+            const hash = window.location.hash || '#booking'; // Tela padrão
+            
+            // 1. Esconde todas as telas
+            allPages.forEach(page => page.style.display = 'none');
+            
+            // 2. Verifica autenticação
+            const user = getCurrentUser();
+            const isAuthenticated = !!user;
+
+            // 3. Lógica de Roteamento
+            if (hash.startsWith('#dashboard') || hash.startsWith('#agenda') || hash.startsWith('#servicos') || hash.startsWith('#clientes') || hash.startsWith('#financeiro') || hash.startsWith('#configuracoes')) {
+                if (isAuthenticated && (user.tipoPerfil === 'Admin' || user.tipoPerfil === 'Barbeiro')) {
+                    // Usuário logado e é Admin/Barbeiro
+                    document.getElementById('admin-dashboard').style.display = 'block';
+                    navigateToAdminPanel(hash);
+                } else {
+                    // Não tem permissão ou não está logado
+                    window.location.hash = '#login';
                 }
-            });
-
-            // Carrega dados específicos da view
-            if (viewId === 'servicos') {
-                carregarServicos();
-            }
-            if (viewId === 'clientes') {
-                carregarClientes();
-            }
-            if (viewId === 'agendamento') {
-                carregarServicosPublico();
-            }
-        }
-
-        // Função de Login (Simulação)
-        function login() {
-            // Aqui você faria a verificação de login
-            // Por enquanto, apenas navegamos para o dashboard
-            navigate('dashboard');
-        }
-
-        // Navegação inicial baseada no Hash
-        function handleNavigation() {
-            const hash = window.location.hash.substring(1);
-            if (hash) {
-                navigate(hash);
+            } else if (hash === '#login' || hash === '#signup') {
+                if (isAuthenticated) {
+                    // Se já está logado, vai para o painel
+                    window.location.hash = '#dashboard';
+                } else {
+                    // Mostra login ou cadastro
+                    const pageId = hash.substring(1); // 'login' ou 'signup'
+                    document.getElementById(pageId).style.display = 'flex';
+                }
+            } else if (hash === '#logout') {
+                handleLogout();
             } else {
-                navigate('agendamento'); // Tela pública como padrão
+                // Telas públicas (agendamento, etc.)
+                // Por enquanto, #booking é a principal
+                document.getElementById('public-booking').style.display = 'block';
+                loadServicesBooking(); // Carrega serviços na tela de agendamento
+            }
+            
+            updateNavUI(isAuthenticated);
+        }
+        
+        // Atualiza links de navegação com base no login
+        function updateNavUI(isAuthenticated) {
+            const navLogin = document.getElementById('nav-public-login');
+            const navDashboard = document.getElementById('nav-public-dashboard');
+            
+            if (isAuthenticated) {
+                navLogin.textContent = 'Sair';
+                navLogin.href = '#logout';
+                navDashboard.style.display = 'inline-block';
+            } else {
+                navLogin.textContent = 'Minha Conta';
+                navLogin.href = '#login';
+                navDashboard.style.display = 'none';
+            }
+        }
+        
+        // Navegação interna do Painel Admin
+        function navigateToAdminPanel(hash) {
+            let targetPanelId = 'panel-dashboard'; // Padrão
+            let targetLink = document.querySelector('.nav-link-admin[data-target="panel-dashboard"]');
+
+            if (hash !== '#dashboard') {
+                const cleanHash = hash.substring(1); // remove #
+                const foundLink = document.querySelector(`.nav-link-admin[href="${hash}"]`);
+                if (foundLink) {
+                    targetPanelId = foundLink.dataset.target;
+                    targetLink = foundLink;
+                }
+            }
+            
+            // Esconde todos os painéis
+            allAdminPanels.forEach(panel => panel.style.display = 'none');
+            // Mostra o painel alvo
+            document.getElementById(targetPanelId).style.display = 'block';
+            
+            // Atualiza links da sidebar
+            adminNavLinks.forEach(link => link.classList.remove('active', 'bg-blue-700'));
+            targetLink.classList.add('active', 'bg-blue-700');
+            
+            // Atualiza título do painel
+            adminPanelTitle.textContent = targetLink.textContent.trim();
+            
+            // Lógica de carregamento de dados para cada painel
+            switch(targetPanelId) {
+                case 'panel-dashboard':
+                    adminPanelSubtitle.textContent = `Olá, ${appState.currentUser.nome}! Veja seu resumo.`;
+                    break;
+                case 'panel-servicos':
+                    adminPanelSubtitle.textContent = 'Adicione, edite ou remova os serviços oferecidos.';
+                    loadServicesAdmin();
+                    break;
+                case 'panel-clientes':
+                    adminPanelSubtitle.textContent = 'Visualize e gerencie as informações dos seus clientes.';
+                    loadClientsCRM();
+                    break;
+                case 'panel-financeiro':
+                    adminPanelSubtitle.textContent = 'Olá, Carlos! Aqui estão suas métricas financeiras.'; // Simulado
+                    break;
+                default:
+                    adminPanelSubtitle.textContent = 'Gerencie sua barbearia.';
             }
         }
 
         // =============================================
-        // == LÓGICA DE DADOS (CRUD via Apps Script) ==
+        // == AUTENTICAÇÃO (Login / Cadastro / Logout) ==
         // =============================================
 
-        // Função genérica para chamar a API
-        async function callApi(action, data = {}) {
-            if (!SCRIPT_URL) {
-                alert("ERRO: A URL do Google Apps Script não foi definida.");
-                console.error("SCRIPT_URL não está definida.");
+        // Armazena dados do usuário no localStorage
+        function setCurrentUser(user) {
+            appState.currentUser = user;
+            localStorage.setItem('barbeariaUser', JSON.stringify(user));
+            // Atualiza dados no painel admin se estiver visível
+            userNameEl.textContent = user.nome;
+            document.getElementById('userProfileName').textContent = user.tipoPerfil;
+            // Placeholder de avatar
+            const userInitial = user.nome ? user.nome.charAt(0).toUpperCase() : 'U';
+            document.getElementById('userAvatar').src = `https://placehold.co/40x40/E2E8F0/718096?text=${userInitial}`;
+        }
+        
+        // Pega dados do usuário do localStorage
+        function getCurrentUser() {
+            if (appState.currentUser) {
+                return appState.currentUser;
+            }
+            const user = localStorage.getItem('barbeariaUser');
+            if (user) {
+                appState.currentUser = JSON.parse(user);
+                return appState.currentUser;
+            }
+            return null;
+        }
+        
+        // Logout
+        function handleLogout() {
+            appState.currentUser = null;
+            localStorage.removeItem('barbeariaUser');
+            window.location.hash = '#login';
+            showToast('success', 'Você saiu com sucesso.');
+        }
+
+        // --- Event Listener: Cadastro ---
+        const signupForm = document.getElementById('signupForm');
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nome = document.getElementById('signupNome').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const tipoPerfil = document.getElementById('signupTipoPerfil').value;
+            
+            // Validação de senha
+            if (password !== confirmPassword) {
+                document.getElementById('passwordError').style.display = 'block';
                 return;
             }
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({ action, data })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.statusText}`);
-                }
-
-                const result = await response.json();
-                
-                if (result.status === 'error') {
-                    throw new Error(result.message);
-                }
-                
-                return result.data;
-
-            } catch (error) {
-                console.error("Falha ao chamar a API:", error);
-                alert(`Erro: ${error.message}`);
-                return null;
-            }
-        }
-
-        // --- CRUD de Serviços ---
-
-        const formServico = document.getElementById('form-servico');
-        const modalServico = document.getElementById('modal-servico');
-        const modalServicoTitulo = document.getElementById('modal-servico-titulo');
-        const listaServicos = document.getElementById('lista-servicos');
-        const servicosLoading = document.getElementById('servicos-loading');
-        const servicosEmpty = document.getElementById('servicos-empty');
-        
-        async function carregarServicos() {
-            listaServicos.innerHTML = '';
-            servicosLoading.style.display = 'block';
-            servicosEmpty.style.display = 'none';
-
-            const servicos = await callApi('readServices');
-
-            servicosLoading.style.display = 'none';
-            if (servicos && servicos.length > 0) {
-                servicos.forEach(s => {
-                    listaServicos.innerHTML += `
-                        <tr class="border-b border-gray-100" id="servico-row-${s.id}">
-                            <td class="py-4 px-2 font-medium">${s.nome}</td>
-                            <td class="py-4 px-2">R$ ${s.preco.toFixed(2)}</td>
-                            <td class="py-4 px-2">${s.duracao} min</td>
-                            <td class="py-4 px-2 space-x-4">
-                                <button class="text-blue-600 hover:text-blue-800" onclick="editarServico('${s.id}', '${s.nome}', ${s.preco}, ${s.duracao}, '${s.descricao || ''}')">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </button>
-                                <button class="text-red-600 hover:text-red-800" onclick="deletarServico('${s.id}')">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                servicosEmpty.style.display = 'block';
-            }
-        }
-
-        async function carregarServicosPublico() {
-            const container = document.getElementById('lista-servicos-publica');
-            container.innerHTML = `<div class="border rounded-lg p-4 text-center animate-pulse bg-gray-200 h-64">Carregando serviços...</div>`;
+            document.getElementById('passwordError').style.display = 'none';
             
-            const servicos = await callApi('readServices');
-
-            if (servicos && servicos.length > 0) {
-                container.innerHTML = ''; // Limpa o loading
-                servicos.forEach(s => {
-                    container.innerHTML += `
-                        <div class="border rounded-lg shadow-sm overflow-hidden cursor-pointer hover:border-secondary hover:shadow-lg transition-all" onclick="selectService(this)">
-                            <img src="https://placehold.co/300x200/cccccc/333333?text=${s.nome.replace(' ', '+')}" alt="${s.nome}" class="w-full h-40 object-cover">
-                            <div class="p-4">
-                                <h3 class="text-lg font-semibold mb-1">${s.nome}</h3>
-                                <p class="text-sm text-gray-500 mb-2">Duração: ${s.duracao} min</p>
-                                <p class="text-lg font-bold text-primary">R$ ${s.preco.toFixed(2)}</p>
-                            </div>
-                        </div>
-                    `;
-                });
+            const data = { nome, email, tipoPerfil };
+            // NOTA: Não estamos enviando a senha! Nosso backend não a armazena (ainda).
+            
+            const result = await callApi('createUser', data);
+            
+            if (result.status === 'success') {
+                showToast('success', 'Conta criada com sucesso! Faça o login.');
+                window.location.hash = '#login';
             } else {
-                container.innerHTML = `<p class="text-gray-600">Nenhum serviço disponível no momento.</p>`;
+                showToast('error', `Erro ao cadastrar: ${result.message}`);
             }
-        }
+        });
 
-        function abrirModalServico() {
-            formServico.reset();
-            modalServicoTitulo.textContent = 'Adicionar Serviço';
-            document.getElementById('servico-id').value = '';
-            modalServico.style.display = 'flex';
-        }
-
-        function fecharModalServico() {
-            modalServico.style.display = 'none';
-        }
-
-        function editarServico(id, nome, preco, duracao, descricao) {
-            formServico.reset();
-            modalServicoTitulo.textContent = 'Editar Serviço';
-            document.getElementById('servico-id').value = id;
-            document.getElementById('servico-nome').value = nome;
-            document.getElementById('servico-preco').value = preco;
-            document.getElementById('servico-duracao').value = duracao;
-            document.getElementById('servico-descricao').value = descricao;
-            modalServico.style.display = 'flex';
-        }
-
-        formServico.addEventListener('submit', async (e) => {
+        // --- Event Listener: Login ---
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('servico-id').value;
-            const servico = {
-                nome: document.getElementById('servico-nome').value,
-                preco: parseFloat(document.getElementById('servico-preco').value),
-                duracao: parseInt(document.getElementById('servico-duracao').value),
-                descricao: document.getElementById('servico-descricao').value
-            };
-
-            let result;
-            if (id) {
-                // Atualizar
-                result = await callApi('updateService', { id, ...servico });
-            } else {
-                // Criar
-                result = await callApi('createService', servico);
-            }
-
-            if (result) {
-                fecharModalServico();
-                carregarServicos(); // Recarrega a lista
-            }
-        });
-
-        async function deletarServico(id) {
-            // Substituir window.confirm por um modal customizado em produção
-            if (confirm("Tem certeza que deseja excluir este serviço?")) {
-                const result = await callApi('deleteService', { id });
-                if (result) {
-                    carregarServicos();
-                }
-            }
-        }
-
-        // --- CRUD de Clientes ---
-        async function carregarClientes() {
-            const container = document.getElementById('lista-clientes');
-            container.innerHTML = `<div class="text-center p-8">Carregando clientes...</div>`;
             
-            const clientes = await callApi('readClients'); // Você precisará implementar 'readClients' no Apps Script
-
-            if (clientes && clientes.length > 0) {
-                container.innerHTML = '';
-                clientes.forEach(c => {
-                    container.innerHTML += `
-                        <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer ${c.id === '1' ? 'bg-blue-100 border-l-4 border-blue-500' : ''}">
-                            <img src="https://placehold.co/40x40/E8F0FE/1e3a8a?text=${c.nome[0]}" alt="Avatar" class="w-10 h-10 rounded-full">
-                            <div class="flex-1">
-                                <div class="font-semibold text-gray-800">${c.nome}</div>
-                                <div class="text-sm text-gray-500">Último serviço: ${c.ultimoServico}</div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-gray-400"></i>
-                        </div>
-                    `;
-                });
-                 // Mostra o detalhe do primeiro cliente por padrão (simulação)
-                document.getElementById('cliente-detalhe').style.display = 'block';
-                document.getElementById('cliente-empty').style.display = 'none';
-
+            const email = document.getElementById('loginEmail').value;
+            // NOTA: A senha não está sendo usada no backend (MVP)
+            const password = document.getElementById('loginPassword').value; 
+            
+            const result = await callApi('loginUser', { email, password });
+            
+            if (result.status === 'success' && result.data) {
+                setCurrentUser(result.data); // Armazena o usuário
+                showToast('success', `Bem-vindo de volta, ${result.data.nome}!`);
+                
+                // Redireciona com base no perfil
+                if (result.data.tipoPerfil === 'Admin' || result.data.tipoPerfil === 'Barbeiro') {
+                    window.location.hash = '#dashboard';
+                } else {
+                    window.location.hash = '#booking'; // Cliente vai para agendamento
+                }
             } else {
-                container.innerHTML = `<p class="text-center p-8 text-gray-500">Nenhum cliente cadastrado.</p>`;
-                // Esconde o detalhe e mostra o estado vazio
-                document.getElementById('cliente-detalhe').style.display = 'none';
-                document.getElementById('cliente-empty').style.display = 'block';
+                showToast('error', `Falha no login: ${result.message}`);
+            }
+        });
+
+        // --- Event Listener: Seleção de Perfil no Cadastro ---
+        document.querySelectorAll('.profile-toggle-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Reseta todos os botões
+                document.querySelectorAll('.profile-toggle-btn').forEach(btn => {
+                    btn.classList.remove('bg-primary', 'text-white');
+                    btn.classList.add('text-gray-600');
+                });
+                // Ativa o botão clicado
+                e.currentTarget.classList.add('bg-primary', 'text-white');
+                e.currentTarget.classList.remove('text-gray-600');
+                // Define o valor do input hidden
+                if (e.currentTarget.id === 'btn-profile-cliente') {
+                    document.getElementById('signupTipoPerfil').value = 'Cliente';
+                } else if (e.currentTarget.id === 'btn-profile-barbeiro') {
+                    document.getElementById('signupTipoPerfil').value = 'Barbeiro';
+                } else {
+                    document.getElementById('signupTipoPerfil').value = 'Admin';
+                }
+            });
+        });
+        
+        // =============================================
+        // == LÓGICA DE DADOS - AGENDAMENTO (PÚBLICO) ==
+        // =============================================
+        
+        async function loadServicesBooking() {
+            const listEl = document.getElementById('servicesList');
+            // Mostra o loading
+            listEl.innerHTML = `
+                <div class="border rounded-lg p-4 text-center text-gray-500">
+                    <div class="h-40 bg-gray-200 rounded-md animate-pulse mb-4"></div>
+                    <div class="h-6 bg-gray-200 rounded-md animate-pulse w-3/4 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded-md animate-pulse w-1/2 mx-auto"></div>
+                </div>
+                <div class="border rounded-lg p-4 text-center text-gray-500">
+                    <div class="h-40 bg-gray-200 rounded-md animate-pulse mb-4"></div>
+                    <div class="h-6 bg-gray-200 rounded-md animate-pulse w-3/4 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded-md animate-pulse w-1/2 mx-auto"></div>
+                </div>
+                <div class="border rounded-lg p-4 text-center text-gray-500">
+                    <div class="h-40 bg-gray-200 rounded-md animate-pulse mb-4"></div>
+                    <div class="h-6 bg-gray-200 rounded-md animate-pulse w-3/4 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded-md animate-pulse w-1/2 mx-auto"></div>
+                </div>`;
+            
+            const result = await callApi('readServices');
+            
+            if (result.status === 'success' && result.data) {
+                appState.services = result.data; // Salva no estado
+                listEl.innerHTML = ''; // Limpa o loading
+                
+                if (result.data.length === 0) {
+                    listEl.innerHTML = '<p class="text-gray-600 col-span-3 text-center">Nenhum serviço disponível no momento.</p>';
+                    return;
+                }
+                
+                result.data.forEach(service => {
+                    const card = document.createElement('div');
+                    card.className = 'service-card border rounded-lg p-5 cursor-pointer hover:shadow-lg hover:border-primary transition-all';
+                    card.dataset.serviceId = service.id;
+                    card.innerHTML = `
+                        <img src="https://placehold.co/300x200/E2E8F0/718096?text=${service.nome.replace(' ', '+')}" alt="${service.nome}" class="w-full h-40 object-cover rounded-md mb-4">
+                        <h4 class="text-xl font-semibold mb-1">${service.nome}</h4>
+                        <p class="text-gray-500 text-sm mb-3">Duração: ${service.duracao} min</p>
+                        <p class="text-2xl font-bold text-primary">R$ ${service.preco.toFixed(2).replace('.', ',')}</p>
+                    `;
+                    // Event listener para seleção de serviço
+                    card.addEventListener('click', () => {
+                        // Remove seleção de outros cards
+                        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('border-primary', 'ring-2', 'ring-primary'));
+                        // Adiciona seleção neste card
+                        card.classList.add('border-primary', 'ring-2', 'ring-primary');
+                        appState.selectedService = service;
+                        document.getElementById('btn-next-step-1').disabled = false;
+                    });
+                    listEl.appendChild(card);
+                });
+            } else {
+                listEl.innerHTML = `<p class="text-red-500 col-span-3 text-center">Erro ao carregar serviços: ${result.message}</p>`;
             }
         }
         
-        // --- Helpers ---
-        function selectProfileTab(tab) {
-            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
+        // =============================================
+        // == LÓGICA DE DADOS - ADMIN SERVIÇOS       ==
+        // =============================================
+
+        const serviceModal = document.getElementById('serviceModal');
+        const serviceForm = document.getElementById('serviceForm');
+
+        // Abrir modal (para criar)
+        document.getElementById('btn-add-service-modal').addEventListener('click', () => {
+            serviceForm.reset();
+            document.getElementById('serviceId').value = '';
+            document.getElementById('serviceModalTitle').textContent = 'Adicionar Novo Serviço';
+            serviceModal.style.display = 'flex';
+        });
+        document.getElementById('btn-add-service-empty').addEventListener('click', () => {
+            serviceForm.reset();
+            document.getElementById('serviceId').value = '';
+            document.getElementById('serviceModalTitle').textContent = 'Adicionar Novo Serviço';
+            serviceModal.style.display = 'flex';
+        });
+        
+        // Fechar modal
+        document.getElementById('closeServiceModal').addEventListener('click', () => serviceModal.style.display = 'none');
+        document.getElementById('cancelServiceModal').addEventListener('click', () => serviceModal.style.display = 'none');
+
+        // Carregar serviços no painel Admin
+        async function loadServicesAdmin() {
+            const listEl = document.getElementById('adminServicesList');
+            const emptyEl = document.getElementById('adminServicesEmpty');
+            listEl.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500">Carregando serviços...</td></tr>';
+            emptyEl.style.display = 'none';
+            
+            const result = await callApi('readServices');
+            
+            if (result.status === 'success' && result.data) {
+                appState.services = result.data; // Atualiza estado
+                listEl.innerHTML = ''; // Limpa o loading
+                
+                if (result.data.length === 0) {
+                    listEl.innerHTML = '';
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+                
+                emptyEl.style.display = 'none';
+                result.data.forEach(service => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b';
+                    row.innerHTML = `
+                        <td class="p-4">
+                            <span class="font-semibold">${service.nome}</span>
+                        </td>
+                        <td class="p-4">R$ ${service.preco.toFixed(2).replace('.', ',')}</td>
+                        <td class="p-4">${service.duracao} min</td>
+                        <td class="p-4">
+                            <button class="btn-edit-service text-blue-600 hover:text-blue-800 mr-3" data-id="${service.id}">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn-delete-service text-red-600 hover:text-red-800" data-id="${service.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    listEl.appendChild(row);
+                });
+                
+                // Adiciona Event Listeners para botões de ação
+                addServiceActionListeners();
+                
+            } else {
+                listEl.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Erro ao carregar serviços: ${result.message}</td></tr>`;
+            }
         }
         
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            handleNavigation();
-            window.addEventListener('hashchange', handleNavigation);
+        // Salvar (Criar ou Editar) Serviço
+        serviceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('serviceId').value;
+            const data = {
+                nome: document.getElementById('serviceName').value,
+                preco: parseFloat(document.getElementById('servicePrice').value),
+                duracao: parseInt(document.getElementById('serviceDuration').value),
+                descricao: document.getElementById('serviceDescription').value,
+            };
+            
+            let action = 'createService';
+            if (id) {
+                action = 'updateService';
+                data.id = id;
+            }
+            
+            const result = await callApi(action, data);
+            
+            if (result.status === 'success') {
+                showToast('success', `Serviço ${id ? 'atualizado' : 'criado'} com sucesso!`);
+                serviceModal.style.display = 'none';
+                loadServicesAdmin(); // Recarrega a lista
+            } else {
+                showToast('error', `Erro ao salvar: ${result.message}`);
+            }
         });
-
-    </script>
-
-    <style>
-        .profile-tab {
-            @apply w-full py-2 px-4 rounded-md text-sm font-medium text-gray-700 transition-all;
+        
+        // Adiciona listeners para botões de editar/deletar
+        function addServiceActionListeners() {
+            // Editar
+            document.querySelectorAll('.btn-edit-service').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    const service = appState.services.find(s => s.id === id);
+                    if (service) {
+                        document.getElementById('serviceId').value = service.id;
+                        document.getElementById('serviceName').value = service.nome;
+                        document.getElementById('servicePrice').value = service.preco;
+                        document.getElementById('serviceDuration').value = service.duracao;
+                        document.getElementById('serviceDescription').value = service.descricao || '';
+                        document.getElementById('serviceModalTitle').textContent = 'Editar Serviço';
+                        serviceModal.style.display = 'flex';
+                    }
+                });
+            });
+            
+            // Deletar
+            document.querySelectorAll('.btn-delete-service').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    // Simples confirmação (o ideal é um modal de confirmação)
+                    if (confirm('Tem certeza que deseja excluir este serviço?')) {
+                        const result = await callApi('deleteService', { id });
+                        if (result.status === 'success') {
+                            showToast('success', 'Serviço excluído com sucesso!');
+                            loadServicesAdmin(); // Recarrega a lista
+                        } else {
+                            showToast('error', `Erro ao excluir: ${result.message}`);
+                        }
+                    }
+                });
+            });
         }
-        .profile-tab.active {
-            @apply bg-white shadow-sm text-primary;
+        
+        // =============================================
+        // == LÓGICA DE DADOS - ADMIN CLIENTES (CRM)  ==
+        // =============================================
+        
+        async function loadClientsCRM() {
+            const listEl = document.getElementById('clientListCRM');
+            const detailEl = document.getElementById('clientDetailCRM');
+            listEl.innerHTML = '<div class="p-4 text-center text-gray-500">Carregando clientes...</div>';
+            
+            const result = await callApi('readClients');
+            
+            if (result.status === 'success' && result.data) {
+                appState.clients = result.data;
+                listEl.innerHTML = '';
+                
+                if (result.data.length === 0) {
+                    listEl.innerHTML = '<div class="p-4 text-center text-gray-500">Nenhum cliente cadastrado.</div>';
+                    return;
+                }
+                
+                result.data.forEach(client => {
+                    const clientCard = document.createElement('div');
+                    clientCard.className = 'client-card-crm flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer';
+                    clientCard.dataset.clientId = client.id;
+                    clientCard.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="https://placehold.co/40x40/E2E8F0/718096?text=${client.nome.charAt(0).toUpperCase()}" alt="Avatar" class="w-10 h-10 rounded-full mr-3">
+                            <div>
+                                <p class="font-semibold">${client.nome}</p>
+                                <span class="text-sm text-gray-500">Último serviço: ${client.ultimoServico || 'N/D'}</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    `;
+                    
+                    // Evento de clique para mostrar detalhes
+                    clientCard.addEventListener('click', () => {
+                        // Destaque visual
+                        document.querySelectorAll('.client-card-crm').forEach(card => card.classList.remove('bg-blue-50', 'border-l-4', 'border-primary'));
+                        clientCard.classList.add('bg-blue-50', 'border-l-4', 'border-primary');
+                        // Renderiza detalhes
+                        renderClientDetail(client.id);
+                    });
+                    
+                    listEl.appendChild(clientCard);
+                });
+                
+            } else {
+                listEl.innerHTML = `<div class="p-4 text-center text-red-500">Erro ao carregar clientes: ${result.message}</div>`;
+            }
         }
-    </style>
+        
+        function renderClientDetail(clientId) {
+            const client = appState.clients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            const detailEl = document.getElementById('clientDetailCRM');
+            detailEl.innerHTML = `
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center">
+                        <img src="https://placehold.co/80x80/E2E8F0/718096?text=${client.nome.charAt(0).toUpperCase()}" alt="Avatar" class="w-20 h-20 rounded-full mr-4">
+                        <div>
+                            <h2 class="text-2xl font-bold">${client.nome}</h2>
+                            <p class="text-gray-500">Cliente desde ${new Date().toLocaleDateString('pt-BR')} <!-- Simulado --></p>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="py-2 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 mr-2"><i class="fas fa-phone mr-2"></i></button>
+                        <button class="py-2 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 mr-2"><i class="fas fa-comment-dots mr-2"></i></button>
+                        <button class="bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-opacity-90">Agendar Novo</button>
+                    </div>
+                </div>
 
-</body>
-</html>
-
+                <div class="grid grid-cols-2 gap-8 mb-6">
+                    <!-- Informações de Contato -->
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Informações de Contato</h4>
+                        <p class="text-sm text-gray-600"><strong>Telefone:</strong> ${client.telefone || 'Não informado'}</p>
+                        <p class="text-sm text-gray-600"><strong>Email:</strong> ${client.email || '
