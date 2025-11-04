@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbearia Macacu - Sistema</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome (para ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        // Configuração do Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#0a2540',
+                        'secondary': '#1e3a8a', // Um azul mais escuro para botões
+                        'light-bg': '#f7f8fa', // Fundo claro das telas
+                        'accent': '#3b82f6', // Cor de destaque
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos customizados */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Um cinza de fundo geral */
+        }
+        .view {
+            display: none; /* Todas as "telas" começam escondidas */
+        }
+        .sidebar-link {
+            @apply flex items-center p-3 rounded-lg text-gray-700 hover:bg-primary hover:text-white transition-all duration-200;
+        }
+        .sidebar-link.active {
+            @apply bg-primary text-white;
+        }
+        .sidebar-icon {
+            @apply w-5 h-5 mr-3;
+        }
+        .card {
+            @apply bg-white p-6 rounded-xl shadow-md;
+        }
+        .input-field {
+            @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary;
+        }
+        .btn {
+            @apply w-full py-3 px-5 rounded-lg text-white font-semibold transition-all duration-200;
+        }
+        .btn-primary {
+            @apply bg-secondary hover:bg-primary;
+        }
+         .btn-outline {
+            @apply bg-transparent border border-secondary text-secondary hover:bg-secondary hover:text-white;
+        }
+    </style>
+</head>
+<body class="flex bg-light-bg min-h-screen">
+
+    <!-- === Sidebar (Painel Admin) === -->
+    <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-full p-4 flex-col justify-between hidden">
+        <div>
+            <!-- Logo e Perfil -->
+            <div class="flex items-center gap-3 mb-6 p-2">
+                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">B</div>
+                <span class="text-xl font-bold text-primary">Barbearia Macacu</span>
+            </div>
+
+            <div class="flex items-center gap-3 mb-8 p-2">
+                <img src="https://placehold.co/40x40/E8F0FE/1e3a8a?text=J" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div>
+                    <div class="font-semibold text-gray-900">João Silva</div>
+                    <div class="text-sm text-gray-500">Barbeiro</div>
+                </div>
+            </div>
+
+            <!-- Links de Navegação -->
+            <nav class="space-y-2">
+                <a href="#dashboard" class="sidebar-link active" onclick="navigate('dashboard')">
+                    <i class="fa-solid fa-tachometer-alt sidebar-icon"></i> Dashboard
+                </a>
+                <a href="#agenda" class="sidebar-link" onclick="navigate('agenda')">
+                    <i class="fa-solid fa-calendar-days sidebar-icon"></i> Agenda
+                </a>
+                <a href="#clientes" class="sidebar-link" onclick="navigate('clientes')">
+                    <i class="fa-solid fa-users sidebar-icon"></i> Clientes
+                </a>
+                 <a href="#servicos" class="sidebar-link" onclick="navigate('servicos')">
+                    <i class="fa-solid fa-cut sidebar-icon"></i> Serviços
+                </a>
+                <a href="#financeiro" class="sidebar-link" onclick="navigate('financeiro')">
+                    <i class="fa-solid fa-dollar-sign sidebar-icon"></i> Financeiro
+                </a>
+                <a href="#configuracoes" class="sidebar-link" onclick="navigate('configuracoes')">
+                    <i class="fa-solid fa-cog sidebar-icon"></i> Configurações
+                </a>
+            </nav>
+        </div>
+        
+        <div>
+            <a href="#login" class="sidebar-link" onclick="navigate('login')">
+                <i class="fa-solid fa-sign-out-alt sidebar-icon"></i> Sair
+            </a>
+        </div>
+    </aside>
+
+    <!-- === Conteúdo Principal === -->
+    <main id="main-content" class="flex-1 transition-all duration-300">
+        
+        <!-- ============================================= -->
+        <!-- == TELA DE LOGIN (Baseado na Tela 2) == -->
+        <!-- ============================================= -->
+        <div id="view-login" class="view flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl">
+                <img src="https://placehold.co/100x100/eeeeee/333333?text=Logo" alt="Logo Barbearia" class="mx-auto h-20 w-auto">
+                <h2 class="text-3xl font-bold text-center text-primary">Acesse sua Conta</h2>
+                <form class="space-y-4">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input id="login-email" type="email" placeholder="Digite seu e-mail" class="input-field mt-1" required>
+                    </div>
+                    <div>
+                        <label for="login-senha" class="block text-sm font-medium text-gray-700">Senha</label>
+                        <input id="login-senha" type="password" placeholder="Digite sua senha" class="input-field mt-1" required>
+                    </div>
+                    <div class="text-right">
+                        <a href="#" class="text-sm font-medium text-secondary hover:underline">Esqueceu a senha?</a>
+                    </div>
+                    <div>
+                        <!-- Este botão simula um login de admin/barbeiro e vai para o dashboard -->
+                        <button type="button" class="btn btn-primary" onclick="login()">Entrar</button>
+                    </div>
+                </form>
+                <p class="text-sm text-center text-gray-600">
+                    Não possui uma conta? 
+                    <a href="#signup" class="font-medium text-secondary hover:underline" onclick="navigate('signup')">Cadastre-se</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- == TELA DE CADASTRO (Baseado na Tela 2) == -->
+        <!-- ============================================= -->
+        <div id="view-signup" class="view flex items-center justify-center min-h-screen bg-gray-100">
+             <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl">
+                <img src="https://placehold.co/100x100/eeeeee/333333?text=Logo" alt="Logo Barbearia" class="mx-auto h-20 w-auto">
+                <h2 class="text-3xl font-bold text-center text-primary">Crie sua Conta</h2>
+                <p class="text-center text-gray-500">Selecione seu perfil e preencha os campos.</p>
+                
+                <!-- Seleção de Perfil -->
+                <div class="grid grid-cols-3 gap-2 rounded-lg p-1 bg-gray-200">
+                    <button class="profile-tab active" onclick="selectProfileTab(this)">Cliente</button>
+                    <button class="profile-tab" onclick="selectProfileTab(this)">Barbeiro</button>
+                    <button class="profile-tab" onclick="selectProfileTab(this)">Admin</button>
+                </div>
+
+                <form class="space-y-4">
+                    <div>
+                        <label for="signup-nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                        <input id="signup-nome" type="text" placeholder="Digite seu nome completo" class="input-field mt-1" required>
+                    </div>
+                    <div>
+                        <label for="signup-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input id="signup-email" type="email" placeholder="Digite seu e-mail" class="input-field mt-1" required>
+                    </div>
+                    <div>
+                        <label for="signup-senha" class="block text-sm font-medium text-gray-700">Crie uma senha</label>
+                        <input id="signup-senha" type="password" placeholder="Crie uma senha" class="input-field mt-1" required>
+                    </div>
+                    <div>
+                        <label for="signup-confirma-senha" class="block text-sm font-medium text-gray-700">Confirme sua Senha</label>
+                        <input id="signup-confirma-senha" type="password" placeholder="Repita a senha" class="input-field mt-1" required>
+                    </div>
+                     <div class="flex items-center">
+                        <input id="termos" name="termos" type="checkbox" class="h-4 w-4 text-secondary focus:ring-secondary border-gray-300 rounded">
+                        <label for="termos" class="ml-2 block text-sm text-gray-700">Li e aceito os <a href="#" class="text-secondary hover:underline">Termos de Serviço</a></label>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary" onclick="alert('Funcionalidade de cadastro a implementar.')">Cadastrar</button>
+                    </div>
+                </form>
+                <p class="text-sm text-center text-gray-600">
+                    Já possui uma conta? 
+                    <a href="#login" class="font-medium text-secondary hover:underline" onclick="navigate('login')">Entrar</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- == TELA DE AGENDAMENTO (Baseado na Tela 1) == -->
+        <!-- ============================================= -->
+        <div id="view-agendamento" class="view">
+            <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">B</div>
+                    <span class="text-xl font-bold text-primary">Barbearia Macacu</span>
+                </div>
+                <nav class="flex items-center gap-6">
+                    <a href="#agendamento" class="text-secondary font-semibold" onclick="navigate('agendamento')">Agendamento</a>
+                    <a href="#login" class="text-gray-600 hover:text-secondary" onclick="navigate('login')">Meus Agendamentos</a>
+                    <a href="#login" class="text-gray-600 hover:text-secondary" onclick="navigate('login')">Minha Conta</a>
+                </nav>
+            </header>
+            
+            <div class="container mx-auto max-w-4xl p-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">Agende seu horário</h1>
+                <p class="text-lg text-gray-600 mb-8">Siga os passos para garantir o seu horário conosco.</p>
+
+                <!-- Etapas -->
+                <div class="flex items-center justify-center space-x-4 mb-12">
+                    <span class="flex items-center text-blue-600 font-semibold">
+                        <span class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2">1</span>
+                        Serviço
+                    </span>
+                    <span class="flex-1 h-0.5 bg-gray-300"></span>
+                    <span class="flex items-center text-gray-500">
+                        <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-2">2</span>
+                        Barbeiro
+                    </span>
+                    <span class="flex-1 h-0.5 bg-gray-300"></span>
+                    <span class="flex items-center text-gray-500">
+                        <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-2">3</span>
+                        Horário
+                    </span>
+                     <span class="flex-1 h-0.5 bg-gray-300"></span>
+                    <span class="flex items-center text-gray-500">
+                        <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center mr-2">4</span>
+                        Confirmação
+                    </span>
+                </div>
+
+                <div class="card">
+                    <h2 class="text-2xl font-semibold mb-6">Qual serviço você deseja?</h2>
+                    <div id="lista-servicos-publica" class="grid md:grid-cols-3 gap-6">
+                        <!-- Serviços serão carregados aqui pelo JS -->
+                        <div class="border rounded-lg p-4 text-center animate-pulse bg-gray-200 h-64">Carregando serviços...</div>
+                    </div>
+                    <div class="flex justify-end mt-8">
+                        <button class="py-3 px-8 rounded-lg bg-secondary text-white font-semibold flex items-center gap-2" disabled>
+                            Avançar <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ============================================= -->
+        <!-- == TELA DE DASHBOARD (Baseado na Tela 3) == -->
+        <!-- ============================================= -->
+        <div id="view-dashboard" class="view p-8">
+            <!-- Header do Painel -->
+            <header class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Olá, João!</h1>
+                <div class="flex items-center gap-4">
+                    <button class="text-gray-500 hover:text-primary"><i class="fa-solid fa-bell text-xl"></i></button>
+                    <button class="text-gray-500 hover:text-primary"><i class="fa-solid fa-comment-dots text-xl"></i></button>
+                    <img src="https://placehold.co/40x40/E8F0FE/1e3a8a?text=J" alt="Avatar" class="w-10 h-10 rounded-full">
+                </div>
+            </header>
+
+            <!-- Cards de Métricas -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <!-- Faturamento do Dia -->
+                <div class="card">
+                    <h3 class="text-gray-500 mb-2">Faturamento do Dia</h3>
+                    <div class="text-4xl font-bold text-gray-900 mb-2">R$ 350,00</div>
+                    <span class="text-green-500 text-sm font-medium">+5.2% vs ontem</span>
+                </div>
+                <!-- Agendamentos para Hoje -->
+                <div class="card">
+                    <h3 class="text-gray-500 mb-2">Agendamentos para Hoje</h3>
+                    <div class="text-4xl font-bold text-gray-900 mb-2">7</div>
+                    <span class="text-green-500 text-sm font-medium">+2 vs ontem</span>
+                </div>
+                <!-- Meta Mensal -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-gray-500">Meta Mensal</h3>
+                        <span class="text-lg font-semibold text-primary">75%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                    </div>
+                    <span class="text-gray-600 text-sm">R$ 3.750 / R$ 5.000</span>
+                </div>
+            </div>
+
+            <!-- Sua Agenda -->
+            <div class="card">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold">Sua Agenda</h2>
+                    <div class="flex gap-2">
+                        <button class="py-2 px-4 rounded-lg bg-gray-200 text-sm font-semibold text-primary">Hoje</button>
+                        <button class="py-2 px-4 rounded-lg text-sm font-medium text-gray-600">Semana</button>
+                        <button class="py-2 px-4 rounded-lg text-sm font-medium text-gray-600">Mês</button>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Item da Agenda 1 -->
+                    <div class="flex items-center p-4 rounded-lg border">
+                        <div class="text-center w-16 mr-4">
+                            <div class="text-lg font-bold text-primary">09:00</div>
+                            <div class="text-sm text-gray-500">AM</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">Carlos Pereira</div>
+                            <div class="text-sm text-gray-600">Corte de Cabelo</div>
+                        </div>
+                        <button class="flex items-center gap-2 py-2 px-3 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
+                            <i class="fa-solid fa-paper-plane"></i> Lembrete
+                        </button>
+                    </div>
+                    <!-- Item da Agenda 2 -->
+                    <div class="flex items-center p-4 rounded-lg border">
+                        <div class="text-center w-16 mr-4">
+                            <div class="text-lg font-bold text-primary">10:30</div>
+                            <div class="text-sm text-gray-500">AM</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">Ricardo Alves</div>
+                            <div class="text-sm text-gray-600">Barba e Cabelo</div>
+                        </div>
+                         <button class="flex items-center gap-2 py-2 px-3 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
+                            <i class="fa-solid fa-paper-plane"></i> Lembrete
+                        </button>
+                    </div>
+                    <!-- Item da Agenda 3 (Encaixe) -->
+                    <div class="flex items-center p-4 rounded-lg bg-red-50 border-l-4 border-red-500">
+                        <div class="text-center w-16 mr-4">
+                            <div class="text-lg font-bold text-red-600">11:00</div>
+                            <div class="text-sm text-gray-500">AM</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-red-700">Mariana Costa</div>
+                            <div class="text-sm text-red-600">Corte Feminino (Encaixe)</div>
+                        </div>
+                         <button class="flex items-center gap-2 py-2 px-3 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
+                            <i class="fa-solid fa-paper-plane"></i> Lembrete
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Estado Vazio -->
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fa-solid fa-calendar-times text-4xl mb-4"></i>
+                    <p class="font-semibold">Nenhum agendamento para a tarde.</p>
+                    <p class="text-sm">Aproveite para organizar suas ferramentas!</p>
+                </div>
+
+            </div>
+            
+            <button class="fixed bottom-8 right-8 bg-primary text-white py-4 px-6 rounded-full shadow-lg text-lg font-semibold flex items-center gap-3">
+                <i class="fa-solid fa-plus"></i> Novo Agendamento
+            </button>
+        </div>
+        
+        <!-- ============================================= -->
+        <!-- == TELA DE SERVIÇOS (Baseado na Tela 5) == -->
+        <!-- ============================================= -->
+        <div id="view-servicos" class="view p-8">
+            <header class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Gerenciamento de Serviços</h1>
+                <button class="bg-primary text-white py-2 px-4 rounded-lg font-semibold flex items-center gap-2" onclick="abrirModalServico()">
+                    <i class="fa-solid fa-plus"></i> Adicionar Serviço
+                </button>
+            </header>
+
+            <div class="card">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="py-4 px-2 font-semibold text-gray-600">Serviço</th>
+                            <th class="py-4 px-2 font-semibold text-gray-600">Preço (R$)</th>
+                            <th class="py-4 px-2 font-semibold text-gray-600">Duração (min)</th>
+                            <th class="py-4 px-2 font-semibold text-gray-600">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-servicos">
+                        <!-- Linha de exemplo (será preenchido pelo JS) -->
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 px-2">Corte de Cabelo</td>
+                            <td class="py-4 px-2">40,00</td>
+                            <td class="py-4 px-2">30</td>
+                            <td class="py-4 px-2 space-x-4">
+                                <button class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pencil"></i></button>
+                                <button class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        <!-- Fim da linha de exemplo -->
+                    </tbody>
+                </table>
+                <div id="servicos-loading" class="text-center p-8">Carregando serviços...</div>
+                <div id="servicos-empty" classs="text-center p-8 hidden">
+                    <i class="fa-solid fa-box-open text-4xl mb-4 text-gray-400"></i>
+                    <p class="font-semibold text-gray-600">Nenhum serviço encontrado</p>
+                    <p class="text-sm text-gray-500">Clique no botão acima para adicionar um serviço.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- == TELA DE CLIENTES (Baseado na Tela 6) == -->
+        <!-- ============================================= -->
+        <div id="view-clientes" class="view p-8">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Gerenciamento de Clientes (CRM)</h1>
+                    <p class="text-gray-600">Visualize e gerencie as informações dos seus clientes.</p>
+                </div>
+                <button class="bg-red-600 text-white py-2 px-4 rounded-lg font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar Notificação em Massa
+                </button>
+            </header>
+
+            <div class="flex gap-6">
+                <!-- Lista de Clientes -->
+                <div class="w-1/3">
+                    <div class="card p-4">
+                        <div class="relative mb-4">
+                            <input type="text" placeholder="Buscar cliente por nome, telefone..." class="input-field pl-10">
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <div class="flex justify-between text-sm mb-4">
+                            <button class="text-gray-600">Ordenar por: <span class="font-semibold text-primary">Última visita <i class="fa-solid fa-chevron-down"></i></span></button>
+                            <button class="text-gray-600">Filtrar por: <span class="font-semibold text-primary">Aniversariante <i class="fa-solid fa-chevron-down"></i></span></button>
+                        </div>
+                        
+                        <div id="lista-clientes" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                            <!-- Clientes carregados pelo JS -->
+                            <div class="text-center p-8">Carregando clientes...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalhes do Cliente -->
+                <div class="w-2/3">
+                    <div id="cliente-detalhe" class="card">
+                        <!-- Detalhes do Cliente João Silva (Exemplo) -->
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex items-center gap-4">
+                                <img src="https://placehold.co/80x80/E8F0FE/1e3a8a?text=J" alt="Avatar Cliente" class="w-20 h-20 rounded-full">
+                                <div>
+                                    <h2 class="text-3xl font-bold text-gray-900">João Silva</h2>
+                                    <p class="text-gray-500">Cliente desde 18/02/2023</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-phone"></i></button>
+                                <button class="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"><i class="fa-solid fa-comment"></i></button>
+                                <button class="py-2 px-4 rounded-lg bg-secondary text-white font-semibold">Agendar Novo</button>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-200 mb-6">
+                            <nav class="flex gap-6">
+                                <button class="pb-3 border-b-2 border-primary text-primary font-semibold">Detalhes</button>
+                                <button class="pb-3 border-b-2 border-transparent text-gray-500 hover:text-primary">Histórico</button>
+                                <button class="pb-3 border-b-2 border-transparent text-gray-500 hover:text-primary">Preferências</button>
+                            </nav>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-500 mb-2">Informações de Contato</h4>
+                                <div class="space-y-1">
+                                    <p><strong>Telefone:</strong> (21) 99876-5432</p>
+                                    <p><strong>Email:</strong> joao.silva@email.com</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-500 mb-2">Dados Pessoais</h4>
+                                <div class="space-y-1">
+                                    <p><strong>Aniversário:</strong> 25 de Outubro</p>
+                                    <p><strong>Endereço:</strong> Não informado</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="text-sm font-semibold text-gray-500 mb-2">Anotações e Preferências</h4>
+                            <p class="text-gray-700 bg-gray-50 p-3 rounded-lg">Prefere máquina 2 nas laterais e tesoura em cima. Alérgico a minoxidil. Gosta de conversar sobre futebol e Fórmula 1. Oferecer café expresso sem açúcar.</p>
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                             <h4 class="text-sm font-semibold text-gray-500 mb-2">Resumo Financeiro</h4>
+                             <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-gray-600">Total Gasto</p>
+                                    <p class="text-2xl font-bold text-primary">R$ 875,00</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600">Último Pagamento</p>
+                                    <p class="text-lg font-semibold text-gray-800">15/07/2024</p>
+                                </div>
+                             </div>
+                        </div>
+
+                        <div class="flex justify-end mt-6">
+                            <button class="flex items-center gap-2 py-2 px-4 rounded-lg bg-gray-200 text-gray-700 font-medium">
+                                <i class="fa-solid fa-pencil"></i> Editar Cadastro
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="cliente-empty" class="card hidden text-center p-12 text-gray-500">
+                        <i class="fa-solid fa-user-search text-5xl mb-4"></i>
+                        <p class="font-semibold">Selecione um cliente</p>
+                        <p class="text-sm">Clique em um cliente na lista ao lado para ver seus detalhes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outras telas (Agenda, Financeiro, Config) podem ser adicionadas aqui -->
+        <div id="view-agenda" class="view p-8">
+             <h1 class="text-3xl font-bold text-gray-900">Agenda Completa</h1>
+             <p class="text-gray-600">Em breve...</p>
+        </div>
+        <div id="view-financeiro" class="view p-8">
+             <h1 class="text-3xl font-bold text-gray-900">Meu Desempenho Financeiro</h1>
+             <p class="text-gray-600">Em breve...</p>
+        </div>
+        <div id="view-configuracoes" class="view p-8">
+             <h1 class="text-3xl font-bold text-gray-900">Configurações</h1>
+             <p class="text-gray-600">Em breve...</p>
+        </div>
+
+    </main>
+
+    <!-- === Modal de Serviço === -->
+    <div id="modal-servico" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold" id="modal-servico-titulo">Adicionar Serviço</h2>
+                <button onclick="fecharModalServico()"><i class="fa-solid fa-times text-gray-500"></i></button>
+            </div>
+            <form id="form-servico" class="space-y-4">
+                <input type="hidden" id="servico-id">
+                <div>
+                    <label for="servico-nome" class="block text-sm font-medium text-gray-700">Nome do Serviço</label>
+                    <input id="servico-nome" type="text" placeholder="Ex: Corte de Cabelo" class="input-field mt-1" required>
+                </div>
+                <div>
+                    <label for="servico-preco" class="block text-sm font-medium text-gray-700">Preço (R$)</label>
+                    <input id="servico-preco" type="number" step="0.01" placeholder="Ex: 40,00" class="input-field mt-1" required>
+                </div>
+                <div>
+                    <label for="servico-duracao" class="block text-sm font-medium text-gray-700">Duração (minutos)</label>
+                    <input id="servico-duracao" type="number" placeholder="Ex: 30" class="input-field mt-1" required>
+                </div>
+                <div>
+                    <label for="servico-descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <textarea id="servico-descricao" rows="3" placeholder="Descreva o serviço..." class="input-field mt-1"></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" class="btn btn-outline" onclick="fecharModalServico()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-8">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // =============================================
+        // == CONFIGURAÇÃO DA API (Google Apps Script) ==
+        // =============================================
+        
+        // !!! IMPORTANTE !!!
+        // Cole aqui a URL do seu Google Apps Script depois de implantá-lo.
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyB4ymxCMmAWsZk3p6E0VqzPIgPC_b7aXooPebFvNuK9GOaLopTLczBgcqv0vaIYCtu9g/exec"; // <-- COLOQUE A URL DA SUA API AQUI
+        
+        // =============================================
+        // == LÓGICA DE NAVEGAÇÃO SPA ==
+        // =============================================
+        
+        const mainContent = document.getElementById('main-content');
+        const sidebar = document.getElementById('sidebar');
+        const views = document.querySelectorAll('.view');
+        
+        function navigate(viewId) {
+            console.log("Navegando para:", viewId);
+            // Esconde todas as views
+            views.forEach(v => v.style.display = 'none');
+            
+            // Mostra a view correta
+            const viewToShow = document.getElementById(`view-${viewId}`);
+            if (viewToShow) {
+                viewToShow.style.display = 'block';
+            } else {
+                console.error("View não encontrada:", viewId);
+                document.getElementById('view-login').style.display = 'block'; // Fallback
+            }
+            
+            // Controla a exibição da Sidebar
+            const adminViews = ['dashboard', 'agenda', 'clientes', 'servicos', 'financeiro', 'configuracoes'];
+            if (adminViews.includes(viewId)) {
+                sidebar.style.display = 'flex';
+                mainContent.style.marginLeft = '16rem'; // 16rem = w-64
+            } else {
+                sidebar.style.display = 'none';
+                mainContent.style.marginLeft = '0';
+            }
+
+            // Atualiza o link ativo na sidebar
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.href.endsWith(`#${viewId}`)) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Carrega dados específicos da view
+            if (viewId === 'servicos') {
+                carregarServicos();
+            }
+            if (viewId === 'clientes') {
+                carregarClientes();
+            }
+            if (viewId === 'agendamento') {
+                carregarServicosPublico();
+            }
+        }
+
+        // Função de Login (Simulação)
+        function login() {
+            // Aqui você faria a verificação de login
+            // Por enquanto, apenas navegamos para o dashboard
+            navigate('dashboard');
+        }
+
+        // Navegação inicial baseada no Hash
+        function handleNavigation() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                navigate(hash);
+            } else {
+                navigate('agendamento'); // Tela pública como padrão
+            }
+        }
+
+        // =============================================
+        // == LÓGICA DE DADOS (CRUD via Apps Script) ==
+        // =============================================
+
+        // Função genérica para chamar a API
+        async function callApi(action, data = {}) {
+            if (!SCRIPT_URL) {
+                alert("ERRO: A URL do Google Apps Script não foi definida.");
+                console.error("SCRIPT_URL não está definida.");
+                return;
+            }
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({ action, data })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.status === 'error') {
+                    throw new Error(result.message);
+                }
+                
+                return result.data;
+
+            } catch (error) {
+                console.error("Falha ao chamar a API:", error);
+                alert(`Erro: ${error.message}`);
+                return null;
+            }
+        }
+
+        // --- CRUD de Serviços ---
+
+        const formServico = document.getElementById('form-servico');
+        const modalServico = document.getElementById('modal-servico');
+        const modalServicoTitulo = document.getElementById('modal-servico-titulo');
+        const listaServicos = document.getElementById('lista-servicos');
+        const servicosLoading = document.getElementById('servicos-loading');
+        const servicosEmpty = document.getElementById('servicos-empty');
+        
+        async function carregarServicos() {
+            listaServicos.innerHTML = '';
+            servicosLoading.style.display = 'block';
+            servicosEmpty.style.display = 'none';
+
+            const servicos = await callApi('readServices');
+
+            servicosLoading.style.display = 'none';
+            if (servicos && servicos.length > 0) {
+                servicos.forEach(s => {
+                    listaServicos.innerHTML += `
+                        <tr class="border-b border-gray-100" id="servico-row-${s.id}">
+                            <td class="py-4 px-2 font-medium">${s.nome}</td>
+                            <td class="py-4 px-2">R$ ${s.preco.toFixed(2)}</td>
+                            <td class="py-4 px-2">${s.duracao} min</td>
+                            <td class="py-4 px-2 space-x-4">
+                                <button class="text-blue-600 hover:text-blue-800" onclick="editarServico('${s.id}', '${s.nome}', ${s.preco}, ${s.duracao}, '${s.descricao || ''}')">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-800" onclick="deletarServico('${s.id}')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                servicosEmpty.style.display = 'block';
+            }
+        }
+
+        async function carregarServicosPublico() {
+            const container = document.getElementById('lista-servicos-publica');
+            container.innerHTML = `<div class="border rounded-lg p-4 text-center animate-pulse bg-gray-200 h-64">Carregando serviços...</div>`;
+            
+            const servicos = await callApi('readServices');
+
+            if (servicos && servicos.length > 0) {
+                container.innerHTML = ''; // Limpa o loading
+                servicos.forEach(s => {
+                    container.innerHTML += `
+                        <div class="border rounded-lg shadow-sm overflow-hidden cursor-pointer hover:border-secondary hover:shadow-lg transition-all" onclick="selectService(this)">
+                            <img src="https://placehold.co/300x200/cccccc/333333?text=${s.nome.replace(' ', '+')}" alt="${s.nome}" class="w-full h-40 object-cover">
+                            <div class="p-4">
+                                <h3 class="text-lg font-semibold mb-1">${s.nome}</h3>
+                                <p class="text-sm text-gray-500 mb-2">Duração: ${s.duracao} min</p>
+                                <p class="text-lg font-bold text-primary">R$ ${s.preco.toFixed(2)}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `<p class="text-gray-600">Nenhum serviço disponível no momento.</p>`;
+            }
+        }
+
+        function abrirModalServico() {
+            formServico.reset();
+            modalServicoTitulo.textContent = 'Adicionar Serviço';
+            document.getElementById('servico-id').value = '';
+            modalServico.style.display = 'flex';
+        }
+
+        function fecharModalServico() {
+            modalServico.style.display = 'none';
+        }
+
+        function editarServico(id, nome, preco, duracao, descricao) {
+            formServico.reset();
+            modalServicoTitulo.textContent = 'Editar Serviço';
+            document.getElementById('servico-id').value = id;
+            document.getElementById('servico-nome').value = nome;
+            document.getElementById('servico-preco').value = preco;
+            document.getElementById('servico-duracao').value = duracao;
+            document.getElementById('servico-descricao').value = descricao;
+            modalServico.style.display = 'flex';
+        }
+
+        formServico.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('servico-id').value;
+            const servico = {
+                nome: document.getElementById('servico-nome').value,
+                preco: parseFloat(document.getElementById('servico-preco').value),
+                duracao: parseInt(document.getElementById('servico-duracao').value),
+                descricao: document.getElementById('servico-descricao').value
+            };
+
+            let result;
+            if (id) {
+                // Atualizar
+                result = await callApi('updateService', { id, ...servico });
+            } else {
+                // Criar
+                result = await callApi('createService', servico);
+            }
+
+            if (result) {
+                fecharModalServico();
+                carregarServicos(); // Recarrega a lista
+            }
+        });
+
+        async function deletarServico(id) {
+            // Substituir window.confirm por um modal customizado em produção
+            if (confirm("Tem certeza que deseja excluir este serviço?")) {
+                const result = await callApi('deleteService', { id });
+                if (result) {
+                    carregarServicos();
+                }
+            }
+        }
+
+        // --- CRUD de Clientes ---
+        async function carregarClientes() {
+            const container = document.getElementById('lista-clientes');
+            container.innerHTML = `<div class="text-center p-8">Carregando clientes...</div>`;
+            
+            const clientes = await callApi('readClients'); // Você precisará implementar 'readClients' no Apps Script
+
+            if (clientes && clientes.length > 0) {
+                container.innerHTML = '';
+                clientes.forEach(c => {
+                    container.innerHTML += `
+                        <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer ${c.id === '1' ? 'bg-blue-100 border-l-4 border-blue-500' : ''}">
+                            <img src="https://placehold.co/40x40/E8F0FE/1e3a8a?text=${c.nome[0]}" alt="Avatar" class="w-10 h-10 rounded-full">
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-800">${c.nome}</div>
+                                <div class="text-sm text-gray-500">Último serviço: ${c.ultimoServico}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-400"></i>
+                        </div>
+                    `;
+                });
+                 // Mostra o detalhe do primeiro cliente por padrão (simulação)
+                document.getElementById('cliente-detalhe').style.display = 'block';
+                document.getElementById('cliente-empty').style.display = 'none';
+
+            } else {
+                container.innerHTML = `<p class="text-center p-8 text-gray-500">Nenhum cliente cadastrado.</p>`;
+                // Esconde o detalhe e mostra o estado vazio
+                document.getElementById('cliente-detalhe').style.display = 'none';
+                document.getElementById('cliente-empty').style.display = 'block';
+            }
+        }
+        
+        // --- Helpers ---
+        function selectProfileTab(tab) {
+            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            handleNavigation();
+            window.addEventListener('hashchange', handleNavigation);
+        });
+
+    </script>
+
+    <style>
+        .profile-tab {
+            @apply w-full py-2 px-4 rounded-md text-sm font-medium text-gray-700 transition-all;
+        }
+        .profile-tab.active {
+            @apply bg-white shadow-sm text-primary;
+        }
+    </style>
+
+</body>
+</html>
